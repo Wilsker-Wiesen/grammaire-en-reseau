@@ -1,0 +1,37 @@
+# Veröffentlicht das Programm (Ordner app/) bei jedem Push auf main automatisch:
+# https://wilsker-wiesen.github.io/grammaire-en-reseau/
+name: Programm veröffentlichen
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", "tools/build_site.py", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seite zusammenstellen
+        # app/index.html ist ohne Dokumentrahmen geschrieben (für Claude-Artifacts);
+        # das Skript ergänzt Doctype, App-Kopfzeilen und eine neue Version für das Offline-Modul.
+        run: python3 tools/build_site.py "${GITHUB_SHA::7}"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,83 @@
+<title>Grammaire en réseau</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Règles de grammaire française, exercices et jeux reliés en réseau. Un programme de Jan Wilsker-Wiesen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400;1,8..60,600&display=swap">
+<link rel="stylesheet" href="styles.css">
+
+<div class="shell" id="shell">
+  <header class="topbar" id="topbar">
+    <button class="icon-btn only-narrow" id="menu-btn" aria-label="Ouvrir le menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <a class="brand" href="#/" aria-label="Accueil">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><circle cx="8" cy="9" r="3.2"/><circle cx="23" cy="7" r="2.4"/><circle cx="17" cy="20" r="4"/><circle cx="6" cy="24" r="2"/><circle cx="27" cy="22" r="2.6"/><path d="M8 9 17 20M23 7 17 20M6 24 17 20M27 22 17 20M8 9 23 7"/></svg>
+      </span>
+      <span class="brand-text"><strong>Grammaire</strong><span>en réseau</span></span>
+    </a>
+    <button class="search-trigger" id="search-trigger" aria-label="Rechercher (Ctrl+K)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <span>Rechercher une règle, un mot, un exercice…</span>
+      <kbd>Ctrl K</kbd>
+    </button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="back-btn" aria-label="Retour" title="Retour (Alt ←)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="icon-btn" id="theme-btn" aria-label="Changer de thème" title="Thème clair / sombre">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="Navigation principale">
+    <div class="nav-group">
+      <a href="#/" data-nav="home"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/></svg><span>Accueil</span></a>
+      <a href="#/themes" data-nav="themes"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Thèmes</span></a>
+      <a href="#/sommaire" data-nav="sommaire"><svg viewBox="0 0 24 24"><path d="M5 5h4M5 12h4M5 19h4M12 5h7M12 12h7M12 19h7"/></svg><span>Sommaire A–Z</span></a>
+      <a href="#/exercices" data-nav="exercices"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><span>Exercices</span></a>
+      <a href="#/jeux" data-nav="jeux"><svg viewBox="0 0 24 24"><path d="M7 9h10a4 4 0 0 1 0 8c-1.5 0-2.3-1-3-2h-4c-.7 1-1.5 2-3 2a4 4 0 0 1 0-8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 14h.01"/></svg><span>Jeux &amp; défis</span></a>
+      <a href="#/revision" data-nav="revision"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg><span>À revoir</span><b class="nav-badge" id="review-badge" hidden></b></a>
+      <a href="#/carte" data-nav="carte"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2.5"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="18" r="2"/><path d="m7.6 8.3 3 3M16.5 7.4 13.6 11M7.5 17.7l3-2.8M16.4 16.8l-2.6-2"/></svg><span>Carte des notions</span></a>
+    </div>
+    <div class="nav-group">
+      <a href="#/progres" data-nav="progres"><svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg><span>Ma progression</span></a>
+      <a href="#/guide" data-nav="guide"><svg viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h4M9 8h3"/></svg><span>Mode d’emploi</span></a>
+      <a href="#/apropos" data-nav="apropos"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></svg><span>À propos</span></a>
+    </div>
+    <div class="nav-foot" id="nav-foot"></div>
+  </nav>
+
+  <main class="main" id="main" tabindex="-1">
+    <div class="boot" id="boot">
+      <div class="boot-mark"></div>
+      <p>Chargement du programme…</p>
+    </div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Fiche ouverte à côté" hidden></aside>
+<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Recherche" hidden>
+  <div class="palette-box">
+    <div class="palette-input">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input id="palette-q" type="search" placeholder="subjonctif, accord du participe, quoique…" autocomplete="off" spellcheck="false">
+      <kbd>Échap</kbd>
+    </div>
+    <div class="palette-results" id="palette-results"></div>
+  </div>
+</div>
+<div class="accent-bar" id="accent-bar" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="peek" id="peek" hidden></div>
+
+<script src="data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/views.js"></script>
+<script src="js/exercise.js"></script>
+<script src="js/games.js"></script>
+<script src="js/graph.js"></script>
+<script src="js/main.js"></script>
