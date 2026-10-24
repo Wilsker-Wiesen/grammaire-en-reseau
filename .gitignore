@@ -1,7 +1,9 @@
 .DS_Store
 __pycache__/
 .venv/
-build/
+build/*
+!build/de/
+build/de/in/
 _site/
 # Originalprogramm (nur lokal, nicht veröffentlicht)
 Grammaire-Programm V. 2/
