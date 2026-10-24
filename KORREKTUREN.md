@@ -14,12 +14,30 @@ Automatisch erzeugt von `tools/build.py`: korrigierte Tippfehler, Lösungen und 
 | Ensuivre s → S'ensuivre | 1 |
 | Etre un ours → Être un ours | 2 |
 | Hair → Haïr | 1 |
+| Kodierungsfehler à¢ → â | 2 |
+| Kodierungsfehler à§ → ç | 27 |
+| Kodierungsfehler à« → ë | 1 |
+| Kodierungsfehler à¹ → ù | 15 |
+| Kodierungsfehler à» → û | 5 |
+| Kodierungsfehler àŠ → Ê | 4 |
+| Kodierungsfehler àˆ → È | 1 |
+| Kodierungsfehler à€ → À | 1 |
 | L-article → L'article | 1 |
 | Participe passé précédé de "en " → Participe passé précédé de "en" | 4 |
 | Participe passé précédé de "en → Participe passé précédé de "en" | 2 |
 | Pronom personnels → Pronoms personnels | 2 |
 | Subjonctif et l-expression de la pensee → Subjonctif et l'expression de la pensée | 1 |
 | Subjonctif present-Subjonctif passe → Subjonctif présent – subjonctif passé | 1 |
+| Titel „Sommaire Liste des verbes irréguliers“ → „Battre“ | 1 |
+| Titel „Sommaire Liste des verbes irréguliers“ → „Boire“ | 1 |
+| Titel „Sommaire“ → „Absoudre“ | 1 |
+| Titel „Sommaire“ → „Acquérir“ | 1 |
+| Titel „Sommaire“ → „Aller“ | 1 |
+| Titel „Sommaire“ → „Assaillir“ | 1 |
+| Titel „Sommaire“ → „Asseoir“ | 1 |
+| Titel „Sommaire“ → „Subjonctif – conjonctions de subordination (tableau)“ | 1 |
+| Titel „tous“ → „Finir“ | 1 |
+| Titel „“ → „Même – adjectif, pronom, adverbe“ | 1 |
 | VOS PARTICIPES PASSES? → VOS PARTICIPES PASSÉS ? | 1 |
 | Verbes defectifs → Verbes défectifs | 1 |
 | Vetir → Vêtir | 1 |
@@ -27,6 +45,7 @@ Automatisch erzeugt von `tools/build.py`: korrigierte Tippfehler, Lösungen und 
 | l-ordre, le désir → l'ordre, le désir | 1 |
 | les motspar → les mots par | 1 |
 | subordonné complétive → subordonnée complétive | 20 |
+| verrutschtes « répétée. » in den Erklärtext zurückgesetzt | 6 |
 | Ça, çà , sa → Ça, çà, sa | 4 |
 
 ## Fehler im Lösungsschlüssel

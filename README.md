@@ -22,7 +22,8 @@ Das Repository ist privat; GitHub Pages ist deshalb abgeschaltet und der Workflo
 - Wiederholung mit Abstand (1, 3, 7, 16, 35 Tage), Tagesziel und Serie.
 - Spiele: Course contre la montre, Défi du jour, Le chemin des notions, Mémo und Locution express.
 - Carte des notions: Karte aller Fiches und ihrer Verweise.
-- Mode d’emploi, Fortschrittsseite, Favoriten, Notizen, Hell- und Dunkelmodus, Offline-Modus.
+- Zweisprachig: Bedienung, Erklärungen und Anweisungen auf Deutsch oder Französisch (Umschalter oben); Beispiele, Übungssätze und Lösungen immer Französisch.
+- Anleitung, Fortschrittsseite, Favoriten, Notizen, Hell- und Dunkelmodus, Offline-Modus.
 
 ## Aufbau
 
@@ -30,6 +31,7 @@ Das Repository ist privat; GitHub Pages ist deshalb abgeschaltet und der Workflo
 |---|---|
 | `app/` | die App (läuft auch als Claude-Artifact), Daten in `app/data.js` |
 | `tools/extract.py`, `tools/build.py` | erzeugen `app/data.js` aus dem Quellmaterial (nur lokal vorhanden) |
+| `tools/build_de.py`, `tools/check_de.py` | bauen und prüfen die deutsche Fassung (`app/data_de.js`) aus `build/de/` |
 | `tools/build_site.py` | baut `_site/` für GitHub Pages |
 | `tools/make_icons.py` | erzeugt die App-Symbole |
 | `KORREKTUREN.md` | Liste der korrigierten Tippfehler und Lösungen |

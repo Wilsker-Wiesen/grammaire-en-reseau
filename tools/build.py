@@ -49,7 +49,7 @@ TYPOS = [
     ('). le subjonctif est essentiellement', '). Le subjonctif est essentiellement'),
     ('Participe passé précédé de "en "', 'Participe passé précédé de "en"'),
 ]
-TITLE_TYPOS = {'Hair': 'Haïr', 'Vetir': 'Vêtir', 'Ensuivre s': "S'ensuivre", 'Participe passé précédé de "en': 'Participe passé précédé de "en"'}
+TITLE_TYPOS = {'Sommaire': None, 'Hair': 'Haïr', 'Vetir': 'Vêtir', 'Ensuivre s': "S'ensuivre", 'Participe passé précédé de "en': 'Participe passé précédé de "en"'}
 FIXED = collections.Counter()
 # Fehler im Lösungsschlüssel des Originals (Übung, Lücke): (falsch, richtig)
 ANSWER_FIX = {
@@ -59,17 +59,45 @@ ANSWER_FIX = {
 ANSWERS_FIXED = []
 
 
+# Zeichen, die im Quellmaterial durch eine falsche Kodierung zerstört wurden: « à » + Folgezeichen
+# (z. B. « àŠtre » → « Être », « coà»ts » → « coûts »). « à… » ist echt (« voilà… ») und bleibt.
+MOJIBAKE = {'à' + ch: chr(ord(ch.encode('cp1252')) + 0x40) for ch in '§¹Š»¢€«ˆ'}
+# in eine Nachbarzelle verrutschter Text
+SHIFTED = [(re.compile(r'(ou souvent)(\s*</td>\s*<td><em>Je ne prends jamais de lait dans) répétée\. (mon café\.)'), r'\1 répétée.\2 \3')]
+
+
 def fix_text(t):
     if not t: return t
     for a, b in TYPOS:
         if a in t:
             FIXED[f'{a} → {b}'] += t.count(a); t = t.replace(a, b)
+    for a, b in MOJIBAKE.items():
+        if a in t:
+            FIXED[f'Kodierungsfehler {a} → {b}'] += t.count(a); t = t.replace(a, b)
+    for rx, rep in SHIFTED:
+        t, n = rx.subn(rep, t)
+        if n: FIXED['verrutschtes « répétée. » in den Erklärtext zurückgesetzt'] += n
     return t
 
 
-def fix_title(t):
+# Fiches ohne brauchbaren Titel im Quellmaterial
+TITLE_BY_ID = {
+    'meme-adjectif-pronom-adverbe-2': 'Même – adjectif, pronom, adverbe',
+    'subjonctif-conjonctions-de-subordination-tableau': 'Subjonctif – conjonctions de subordination (tableau)',
+    'finir': 'Finir',
+}
+
+
+def fix_title(t, rid=None):
+    if rid in TITLE_BY_ID:
+        FIXED[f'Titel „{t}“ → „{TITLE_BY_ID[rid]}“'] += 1
+        return TITLE_BY_ID[rid]
     t = fix_text(t)
-    if t in TITLE_TYPOS:
+    if t.startswith('Sommaire') and rid and rid.startswith('verbe-'):
+        new = {'acquerir': 'Acquérir'}.get(rid[6:], rid[6:].replace('-', ' ').capitalize())
+        FIXED[f'Titel „{t}“ → „{new}“'] += 1
+        return new
+    if TITLE_TYPOS.get(t):
         FIXED[f'{t} → {TITLE_TYPOS[t]}'] += 1; t = TITLE_TYPOS[t]
     return t
 
@@ -80,7 +108,7 @@ def main():
 
     # ---------------------------------------------------------------- tippfehler
     for r in rules.values():
-        r['title'] = fix_title(r['title']); r['html'] = fix_text(r['html'])
+        r['title'] = fix_title(r['title'], r['id']); r['html'] = fix_text(r['html'])
     for e in exercises.values():
         for key in ('title', 'subtitle', 'instructions', 'body', 'reading'):
             if e.get(key): e[key] = fix_text(e[key])

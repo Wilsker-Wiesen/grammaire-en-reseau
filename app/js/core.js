@@ -304,6 +304,7 @@
 
   // ------------------------------------------------------------------ recherche plein texte
   let INDEX = null;
+  G.resetIndex = () => { INDEX = null; };
   G.buildIndex = function () {
     if (INDEX) return INDEX;
     INDEX = [];

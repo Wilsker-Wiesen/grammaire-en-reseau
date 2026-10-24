@@ -31,7 +31,7 @@
       const sc = document.createElement('script');
       const v = (document.querySelector('script[src*="js/i18n.js"]') || {}).src || '';
       sc.src = 'data_de.js' + (v.includes('?') ? v.slice(v.indexOf('?')) : '');
-      sc.onload = () => { G.DE = window.GRAMMAIRE_DE || null; res(); };
+      sc.onload = () => { G.DE = window.GRAMMAIRE_DE || null; G.resetIndex && G.resetIndex(); res(); };
       sc.onerror = () => res();
       document.head.appendChild(sc);
     });

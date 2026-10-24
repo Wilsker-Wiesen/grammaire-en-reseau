@@ -15,6 +15,8 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from check_de import tags  # noqa: E402
 
+MOJIBAKE = {'à' + ch: chr(ord(ch.encode('cp1252')) + 0x40) for ch in '§¹Š»¢€«ˆ'}
+
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 OUT = os.path.join(ROOT, 'build', 'de', 'out')
 
@@ -42,7 +44,15 @@ def main():
             bad.append(rid); continue
         if tags(t.get('html', '')) != tags(r['html']) or not t.get('title'):
             bad.append(rid); continue
-        rules[rid] = {'title': t['title'].strip(), 'html': t['html']}
+        html = t['html']
+        for a, b in MOJIBAKE.items():
+            html = html.replace(a, b)
+        html = html.replace('dans répétée. mon café', 'dans mon café')
+        title = t['title'].strip()
+        # Verbseiten heißen in beiden Sprachen nach dem französischen Infinitiv
+        if not title or title.startswith(('Inhalt', 'Sommaire', 'Register')) or rid.startswith('verbe-') or rid == 'finir':
+            title = r['title']  # Fehltitel des Originals : korrigierter (französischer) Titel
+        rules[rid] = {'title': title, 'html': html}
         ok += 1
     strings = {}
     for f in sorted(glob.glob(os.path.join(OUT, 'strings_*.json'))):
