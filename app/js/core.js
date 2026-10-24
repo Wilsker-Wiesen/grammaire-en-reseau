@@ -63,7 +63,7 @@
   const THEME_COLORS = ['var(--map-0)', 'var(--map-1)', 'var(--map-2)', 'var(--map-3)', 'var(--map-4)'];
   G.themeColor = (i) => (i >= 0 && i < 5 ? THEME_COLORS[i] : 'var(--map-x)');
   G.TYPE_LABEL = new Proxy({ cloze: ['Texte à compléter', 'Lückentext'], quiz: ['Questionnaire', 'Quiz'], match: ['Associations', 'Zuordnung'] }, { get: (o, k) => o[k] && G.T(o[k][0], o[k][1]) });
-  G.excerpt = (rule, n = 220) => { const t = strip(rule.html); return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t; };
+  G.excerpt = (rule, n = 220) => { const t = strip(rule.html).replace(/\*/g, '').replace(/\s+([,.;:])(?=\s|$)/g, '$1').replace(/"\s*([^"]+?)\s*"/g, G.lang === 'de' ? '„$1“' : '« $1 »').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t; };
 
   // ------------------------------------------------------------------ stockage (local + base privée de l'artefact)
   const LS_KEY = 'grammaire-en-reseau-v1';
@@ -222,7 +222,9 @@
     if (opts.restoreY != null) window.scrollTo(0, opts.restoreY);
     else if (!rt.parts[2] || name !== 'regle') window.scrollTo(0, 0);
     if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }
-    const t = $('h1', main); document.title = (t ? t.textContent.trim() + ' · ' : '') + 'Grammaire en réseau';
+    // Fenstertitel : übersetzt, ohne Schlusspunkt, ohne doppelten App-Namen
+    const h1 = t0 => (t0 ? G.tr(t0.textContent.replace(/\s+/g, ' ').trim()).replace(/[.。]$/, '') : '');
+    const tt = h1($('h1', main)); document.title = tt && tt !== 'Grammaire en réseau' ? `${tt} · Grammaire en réseau` : 'Grammaire en réseau';
     G.updateBadge();
   }
   const VIEW_NAV = { regle: 'sommaire', exercice: 'exercices', jeu: 'jeux', theme: 'themes', recherche: 'home' };

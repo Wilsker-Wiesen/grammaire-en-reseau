@@ -5,10 +5,10 @@
 
   const GAMES = [
     { id: 'sprint', title: 'Course contre la montre', desc: 'Soixante secondes, une phrase à la fois. Les bonnes réponses en série rapportent des points bonus.', ic: ICON.bolt, color: 'linear-gradient(140deg,var(--t-800),var(--t-500))' },
+    { id: 'express', title: 'Locution express', desc: 'Un début d’expression, quatre fins possibles. Ou l’inverse, en mode retourné.', ic: ICON.quote, color: 'linear-gradient(140deg,#134e4a,#2f8fb8)' },
     { id: 'defi', title: 'Défi du jour', desc: 'Dix questions tirées de tout le programme, les mêmes pour tout le monde aujourd’hui. Seul le premier essai compte.', ic: ICON.cal, color: 'linear-gradient(140deg,var(--t-900),var(--t-600))' },
     { id: 'chemin', title: 'Le chemin des notions', desc: 'Reliez deux fiches en suivant leurs renvois. Lisez les extraits pour choisir la bonne direction.', ic: ICON.path, color: 'linear-gradient(140deg,#0b4f6b,var(--t-500))' },
     { id: 'memo', title: 'Mémo des locutions', desc: 'Retournez les cartes, reformez les expressions et découvrez leur sens.', ic: ICON.cards, color: 'linear-gradient(140deg,var(--t-700),var(--t-300))' },
-    { id: 'express', title: 'Locution express', desc: 'Un début d’expression, quatre fins possibles. Ou l’inverse, en mode retourné.', ic: ICON.quote, color: 'linear-gradient(140deg,#134e4a,#2f8fb8)' },
     { id: 'revision', title: 'Révision espacée', desc: 'Vos erreurs reviennent au bon moment, jusqu’à ce qu’elles soient acquises.', ic: ICON.redo, color: 'linear-gradient(140deg,var(--t-950),var(--t-700))', href: '#/revision' },
   ];
   const GAMES_DE = {
@@ -16,7 +16,7 @@
     defi: ['Tagesquiz', 'Zehn Fragen aus dem ganzen Programm, heute für alle gleich. Nur der erste Versuch zählt.'],
     chemin: ['Regelpfad', 'Verbinde zwei Regeln über ihre Querverweise. Die Auszüge helfen dir, die richtige Richtung zu finden.'],
     memo: ['Redewendungs-Memo', 'Karten aufdecken, Redewendungen zusammensetzen und ihre Bedeutung entdecken.'],
-    express: ['Redewendung express', 'Vier Spielarten: Ende finden, Anfang finden, Bedeutung erkennen oder die passende Redewendung zur Bedeutung wählen.'],
+    express: ['Redewendungs-Express', 'Vier Spielarten: Ende finden, Anfang finden, Bedeutung erkennen oder die passende Redewendung zur Bedeutung wählen.'],
     revision: ['Wiederholung mit Abstand', 'Deine Fehler kommen zur richtigen Zeit zurück, bis sie sitzen.'],
   };
   GAMES.forEach((g) => { const fr = [g.title, g.desc]; Object.defineProperty(g, 'title', { get: () => G.T(fr[0], GAMES_DE[g.id][0]) }); Object.defineProperty(g, 'desc', { get: () => G.T(fr[1], GAMES_DE[g.id][1]) }); });
@@ -27,6 +27,7 @@
   function gameStatus(g) {
     if (g.id === 'revision') return `<span class="chip accent">${plural(G.review.due().length, 'item')} à revoir</span>`;
     if (g.id === 'defi') { const t = S.data.games['defi:' + G.today()]; return t != null ? `<span class="chip ok">Fait aujourd’hui : ${t} %</span>` : '<span class="chip accent">À faire aujourd’hui</span>'; }
+    if (g.id === 'express') { const n = G.locMastered ? G.locMastered() : 0; return `<span class="chip ${n ? 'ok' : ''}">${G.T(`${n}/${pool().pairs.length} maîtrisées`, `${n}/${pool().pairs.length} sicher`)}</span>`; }
     if (g.id === 'sprint') { const b = S.data.games['sprint:']; return b != null ? `<span class="chip">Record (tout le programme) : ${b}</span>` : '<span class="chip">Jouer</span>'; }
     const best = S.data.games[g.id];
     return best != null ? `<span class="chip">Record : ${best}${g.id === 'memo' ? ' coups' : ''}</span>` : '<span class="chip">Jouer</span>';
@@ -61,8 +62,8 @@
     const e = G.ex(item.ex);
     if (!e) { onDone(true, true); return; }
     const rule = (e.rules || [])[0];
-    const head = `<div class="consigne">${esc(strip(e.title))}</div>`;
-    const src = `<div class="src">Tiré de <a href="#/exercice/${e.id}">${esc(G.exTitle(e))}</a>${rule ? ` · <button class="linkish" data-sidehref="#/regle/${rule}">${ICON.side} ${esc(G.ruleTitle(rule))}</button>` : ''}</div>`;
+    const head = `<div class="consigne">${esc(G.exTitle(e))}</div>`;
+    const src = `<div class="src">${G.T('Tiré de', 'Aus der Übung')} <a href="#/exercice/${e.id}">${G.T('', '„')}${esc(G.exTitle(e))}${G.T('', '“')}</a>${rule ? ` · <button class="linkish" data-sidehref="#/regle/${rule}">${ICON.side} ${esc(G.ruleTitle(rule))}</button>` : ''}</div>`;
     let over = false;
     const finishWith = (ok, first, delay) => { over = true; setTimeout(() => onDone(ok, first), delay); };
     if (item.t === 'c' && !G.fitsAlone(e, item.i)) {
@@ -109,9 +110,13 @@
       let tries = 0;
       $$('.qopt', host).forEach((b) => b.onclick = () => {
         if (over) return;
+        over = true;
         const a = q.answers[+b.dataset.a];
-        if (a.ok) { b.classList.add('ok'); $$('.qopt', host).forEach((x) => (x.disabled = true)); finishWith(tries === 0, tries === 0, 650); }
-        else { b.classList.add('ko'); b.disabled = true; tries++; if (rule) $('#rv', host).innerHTML = '<span style="color:var(--ko)">Non. Relisez la règle si besoin.</span>'; }
+        $$('.qopt', host).forEach((x) => { x.disabled = true; if (q.answers[+x.dataset.a].ok) x.classList.add('ok'); });
+        if (a.ok) { finishWith(true, true, 650); return; }
+        b.classList.add('ko');
+        $('#rv', host).innerHTML = `<span class="loc-no">${G.T('Dommage. La bonne réponse est en vert.', 'Leider nicht. Die richtige Antwort ist grün markiert.')}</span><div style="margin-top:12px"><button class="btn primary" id="qnext">${ICON.arrow} ${G.T('Continuer', 'Weiter')}</button></div>`;
+        $('#qnext', host).onclick = () => onDone(false, false); $('#qnext', host).focus();
       });
     }
     $$('[data-sidehref]', host).forEach((a) => a.onclick = (ev) => { ev.preventDefault(); G.openDrawer(a.dataset.sidehref); });
@@ -128,50 +133,72 @@
     } catch (e) { /* keine Sprachausgabe */ }
   };
   const canSpeak = () => 'speechSynthesis' in window;
-  // Lernstand je Redewendung : n = gesehen, ok = Serie richtiger Antworten
-  const locStat = (p) => ((S.data.loc = S.data.loc || {})[G.pairKey(p[0], p[1])] = S.data.loc[G.pairKey(p[0], p[1])] || { n: 0, ok: 0 });
-  const mastered = (p) => locStat(p).ok >= 2;
+  // Lernstand je Redewendung : n = gesehen, ok = Serie richtiger Antworten, last = letzter Kontakt (Datum)
+  const pk = (p) => G.pairKey(p[0], p[1]);
+  const peekStat = (p) => (S.data.loc || {})[pk(p)] || { n: 0, ok: 0, last: '' };
+  const writeStat = (p, ok, soft) => {
+    const loc = (S.data.loc = S.data.loc || {}); const st = loc[pk(p)] || { n: 0, ok: 0, last: '' };
+    st.n++; if (!soft) st.ok = ok ? st.ok + 1 : 0; st.last = G.today(); loc[pk(p)] = st; return st;
+  };
+  G.locSeen = (p) => writeStat(p, false, true);
+  const mastered = (p) => peekStat(p).ok >= 2;
   G.locMastered = () => pool().pairs.filter(mastered).length;
+  // kurze Bedeutung fürs Spiel : erster Teil, ohne Klammern und ohne Zitate, die die Lösung verraten
+  G.meaningShort = function (a, b) {
+    let m = G.meaning(a, b).split(' / ')[0];
+    const words = fold(a + ' ' + b).split(/[^a-z]+/).filter((w) => w.length > 3);
+    m = m.replace(/\s*\([^)]*\)/g, (x) => (words.some((w) => fold(x).includes(w)) ? '' : x));
+    m = m.replace(/\s*[„«"][^“»"]*[“»"]/g, (x) => (words.some((w) => fold(x).includes(w)) ? '' : x));
+    if (m.length > 150) { const k = m.slice(0, 150).lastIndexOf(','); m = (k > 60 ? m.slice(0, k) : m.slice(0, 147)) + ' …'; }
+    return m.trim().replace(/[:;,]$/, '');
+  };
 
   /** Eine Frage zu einer Redewendung. opts.mode : 'end' (Ende finden), 'start' (Anfang finden),
       'meaning' (Bedeutung erkennen), 'expr' (Redewendung zur Bedeutung finden). */
   function askPair(host, item, onDone, opts = {}) {
-    const all = pool().pairs; const mode = opts.mode || (opts.reverse ? 'start' : 'end');
-    const full = `${item.s} ${item.e}`; const m = G.meaning(item.s, item.e);
+    const all = pool().pairs;
+    let mode = opts.mode || (opts.reverse ? 'start' : 'end');
+    if (mode === 'start' && item.s.trim().split(/\s+/).length < 2) mode = 'end'; // ein einzelnes Wort als Anfang wäre zu leicht
+    const full = `${item.s} ${item.e}`; const m = G.meaning(item.s, item.e), ms = G.meaningShort(item.s, item.e);
     const others = all.filter((p) => lkey(p[0]) !== lkey(item.s));
-    const pick = (vals, right) => {
-      const near = [...new Set(vals.filter((v) => v && lkey(v) !== lkey(right)))].sort((a, b) => Math.abs(a.length - right.length) - Math.abs(b.length - right.length));
-      return G.shuffle([right, ...G.shuffle(near.slice(0, 9)).slice(0, 3)]);
-    };
-    let q, right, opts4;
-    if (mode === 'start') { right = item.s; q = `<span class="dim">…</span> ${esc(item.e)}`; opts4 = pick(others.map((p) => p[0]), right); }
-    else if (mode === 'meaning') { right = m; q = `« ${esc(full)} »`; opts4 = pick(others.map((p) => G.meaning(p[0], p[1])), right); }
-    else if (mode === 'expr') { right = full; q = esc(m); opts4 = pick(others.map((p) => `${p[0]} ${p[1]}`), right); }
-    else { right = item.e; q = `${esc(item.s)} <span class="dim">…</span>`; opts4 = pick(others.map((p) => p[1]), right); }
+    const label = { end: (p) => p[1], start: (p) => p[0], meaning: (p) => G.meaningShort(p[0], p[1]), expr: (p) => `${p[0]} ${p[1]}` }[mode];
+    const right = label([item.s, item.e]);
+    const near = others.filter((p) => label(p) && lkey(label(p)) !== lkey(right)).sort((a, b) => Math.abs(label(a).length - right.length) - Math.abs(label(b).length - right.length));
+    const choices = G.shuffle([[item.s, item.e], ...G.shuffle(near.slice(0, 9)).slice(0, 3)]);
+    const q = { end: `${esc(item.s)} <span class="dim">…</span>`, start: `<span class="dim">…</span> ${esc(item.e)}`, meaning: `« ${esc(full)} »`, expr: esc(ms) }[mode];
     const ask = { end: G.T('Comment se termine cette expression ?', 'Wie endet diese Redewendung?'), start: G.T('Quel est le début de cette expression ?', 'Wie beginnt diese Redewendung?'),
       meaning: G.T('Que signifie cette expression ?', 'Was bedeutet diese Redewendung?'), expr: G.T('Quelle expression a ce sens ?', 'Welche Redewendung hat diese Bedeutung?') }[mode];
     host.innerHTML = `<div class="flash-card loc-card"><div class="consigne">${ask}</div>
       <div class="ctx loc-q ${mode === 'expr' ? 'is-meaning' : ''}">${q}${mode !== 'expr' && canSpeak() ? ` <button class="icon-btn speak" type="button" data-say="${esc(mode === 'meaning' ? full : mode === 'start' ? item.e : item.s)}" title="${G.T('Écouter', 'Anhören')}" aria-label="${G.T('Écouter', 'Anhören')}">${ICON.sound}</button>` : ''}</div>
-      <div class="qopts loc-opts ${mode === 'meaning' ? 'long' : ''}">${opts4.map((o, k) => `<button class="qopt" data-k="${k}"><span class="key">${k + 1}</span>${esc(o)}</button>`).join('')}</div>
+      <div class="qopts loc-opts ${mode === 'meaning' || mode === 'expr' ? 'long' : ''}">${choices.map((p, k) => `<button class="qopt" data-k="${k}"><span class="key">${k + 1}</span><span>${esc(label(p))}</span></button>`).join('')}</div>
       <div class="reveal" id="rv" aria-live="polite"></div>
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap" id="nx" hidden><button class="btn primary" data-next>${ICON.arrow} ${G.T('Continuer', 'Weiter')} <kbd>Enter</kbd></button>${canSpeak() ? `<button class="btn" type="button" data-say="${esc(full)}">${ICON.sound} ${G.T('Écouter', 'Anhören')}</button>` : ''}</div></div>`;
-    let first = true, over = false;
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap" id="nx" hidden><button class="btn primary" data-next>${ICON.arrow} ${G.T('Continuer', 'Weiter')} <kbd class="hide-touch">Enter</kbd></button>${canSpeak() ? `<button class="btn" type="button" data-say="${esc(full)}">${ICON.sound} ${G.T('Écouter', 'Anhören')}</button>` : ''}</div></div>`;
+    let over = false, timer = 0;
+    const done = (ok) => { cleanup(); clearTimeout(timer); onDone(ok, ok); };
     const choose = (b) => {
-      if (over || !b || b.disabled) return;
-      if (lkey(opts4[+b.dataset.k]) === lkey(right)) {
-        over = true; b.classList.add('ok'); $$('.qopt', host).forEach((x) => (x.disabled = true));
-        const st = locStat([item.s, item.e]); st.n++; st.ok = first ? st.ok + 1 : 0;
-        $('#rv', host).innerHTML = `<b lang="fr">« ${esc(full)} »</b><br><span style="color:var(--${m ? 'ink-2' : 'muted'})">${m ? esc(m) : G.T('Signification non donnée dans le programme.', 'Bedeutung im Programm nicht angegeben.')}</span>`;
-        const nx = $('#nx', host); nx.hidden = false; $('[data-next]', nx).focus();
-        $('[data-next]', nx).onclick = () => { cleanup(); onDone(first, first); };
-      } else { b.classList.add('ko'); b.disabled = true; first = false; }
+      if (over || !b) return;
+      over = true;
+      const picked = choices[+b.dataset.k]; const ok = lkey(label(picked)) === lkey(right);
+      const rightBtn = $$('.qopt', host).find((x) => lkey(label(choices[+x.dataset.k])) === lkey(right));
+      $$('.qopt', host).forEach((x) => (x.disabled = true));
+      rightBtn.classList.add('ok'); if (!ok) b.classList.add('ko');
+      writeStat([item.s, item.e], ok);
+      const wrongInfo = !ok ? `<div class="loc-wrong">${G.T('Votre choix', 'Deine Wahl')} : <span lang="fr">« ${esc(picked[0])} ${esc(picked[1])} »</span> – ${esc(G.meaningShort(picked[0], picked[1]))}</div>` : '';
+      $('#rv', host).innerHTML = `${ok ? '' : `<span class="loc-no">${G.T('Dommage. La bonne réponse :', 'Leider nicht. Richtig ist:')}</span><br>`}<b lang="fr">« ${esc(full)} »</b><br><span style="color:var(--ink-2)">${m ? esc(m) : G.T('Signification non donnée dans le programme.', 'Bedeutung im Programm nicht angegeben.')}</span>${wrongInfo}`;
+      const nx = $('#nx', host); nx.hidden = false; $('[data-next]', nx).focus({ preventScroll: true });
+      $('[data-next]', nx).onclick = () => done(ok);
+      // richtige Antwort : nach kurzer Pause automatisch weiter (Express)
+      if (ok && opts.auto !== false) timer = setTimeout(() => { if (host.isConnected) done(true); }, 1400);
     };
     $$('.qopt', host).forEach((b) => b.onclick = () => choose(b));
-    $$('[data-say]', host).forEach((b) => b.onclick = () => G.speak(b.dataset.say));
+    $$('[data-say]', host).forEach((b) => b.onclick = () => { clearTimeout(timer); G.speak(b.dataset.say); });
     const onKey = (ev) => {
       if (!host.isConnected) return cleanup();
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      if (ev.target.closest && ev.target.closest('input, textarea, select, [contenteditable]')) return;
+      if (!$('#palette').hidden || !$('#drawer').hidden) return;
       if (/^[1-4]$/.test(ev.key) && !over) { ev.preventDefault(); choose($(`.qopt[data-k="${+ev.key - 1}"]`, host)); }
-      else if (ev.key === 'Enter' && over) { ev.preventDefault(); $('[data-next]', host).click(); }
+      else if (ev.key === 'Enter' && over) { ev.preventDefault(); done($$('.qopt.ko', host).length === 0); }
     };
     const cleanup = () => document.removeEventListener('keydown', onKey);
     document.addEventListener('keydown', onKey);
@@ -180,10 +207,11 @@
   function stage(title) {
     return h(`<div class="page"><div class="stage"><div class="crumbs" style="margin-bottom:10px"><a href="#/jeux">Jeux</a></div><h1 style="font:800 clamp(26px,3.6vw,38px)/1.1 var(--f-display);margin:0 0 18px">${title}</h1><div id="st"></div></div></div>`);
   }
-  function summary(host, { big, label, text, again, items, extra, againLabel }) {
-    host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">${label}</div><div style="font:800 64px/1 var(--f-display);color:var(--accent);margin:12px 0">${big}</div><p style="font:18px/1.5 var(--f-read);margin:0 auto 18px;max-width:46ch">${text}</p>
-      ${extra || ''}<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn primary" id="again">${ICON.redo} ${againLabel || 'Rejouer'}</button><a class="btn" href="#/jeux">Autres jeux</a>${G.review.due().length ? `<a class="btn" href="#/revision">À revoir (${G.review.due().length})</a>` : ''}</div></div>
-      ${items && items.filter((x) => x.ex).length ? `<div class="section-title"><h2>À retravailler</h2></div><div class="ex-rows">${[...new Set(items.filter((x) => x.ex).map((x) => x.ex))].map((id) => G.exRow(id)).join('')}</div>` : ''}`;
+  function summary(host, { big, label, text, again, items, extra, againLabel, extraButtons, after }) {
+    host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">${label}</div><div class="big-num">${big}</div><p style="font:18px/1.5 var(--f-read);margin:0 auto 18px;max-width:46ch">${text}</p>
+      ${extra || ''}<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${extraButtons || ''}<button class="btn ${extraButtons ? '' : 'primary'}" id="again">${ICON.redo} ${againLabel || G.T('Rejouer', 'Nochmal spielen')}</button><a class="btn" href="#/jeux">${G.T('Autres jeux', 'Andere Spiele')}</a>${G.review.due().length ? `<a class="btn" href="#/revision">${G.T('À revoir', 'Wiederholen')} (${G.review.due().length})</a>` : ''}</div></div>
+      ${after || ''}
+      ${items && items.filter((x) => x.ex).length ? `<div class="section-title"><h2>${G.T('À retravailler', 'Nacharbeiten')}</h2></div><div class="ex-rows">${[...new Set(items.filter((x) => x.ex).map((x) => x.ex))].map((id) => G.exRow(id)).join('')}</div>` : ''}`;
     $('#again', host).onclick = again;
   }
   const keyOf = (it) => it.t === 'p' ? G.pairKey(it.s, it.e) : `${it.t}:${it.ex}:${it.i}`;
@@ -195,7 +223,7 @@
   };
 
   function sprint() {
-    const g = GAMES[0]; const el = stage(g.title); const host = $('#st', el);
+    const g = GAMES.find((x) => x.id === 'sprint'); const el = stage(g.title); const host = $('#st', el);
     const cats = [...new Set(pool().gaps.map((x) => x.cat).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr'));
     const count = (c) => pool().gaps.filter((x) => !c || x.cat === c).length;
     const rec = (c) => S.data.games['sprint:' + c];
@@ -227,6 +255,7 @@
       };
       function end(stopped) {
         clearInterval(tick); G.cleanup = null;
+        if (stopped && k <= 1 && !pts && !missed.length) { G.refresh(); return; }
         missed.forEach((it) => G.review.add(keyOf(it), it));
         const key = 'sprint:' + cat; const isRec = !stopped && pts > (S.data.games[key] || 0);
         if (!stopped) S.data.games[key] = Math.max(S.data.games[key] || 0, pts);
@@ -241,7 +270,7 @@
   }
 
   function defi() {
-    const g = GAMES[1]; const el = stage(g.title); const host = $('#st', el);
+    const g = GAMES.find((x) => x.id === 'defi'); const el = stage(g.title); const host = $('#st', el);
     const day = G.today(); const r = G.rng(G.hashStr('defi' + day));
     const P = pool();
     const order = G.shuffle([...G.shuffle(P.gaps, r).slice(0, 8), ...G.shuffle(P.quiz, r).slice(0, 2)], r);
@@ -272,28 +301,28 @@
       step();
     };
     if (official != null) {
-      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">${G.T(`Défi d’aujourd’hui relevé : <b>${official} %</b>${yesterday != null ? ` (hier : ${yesterday} %)` : ''}. Vous pouvez le refaire pour vous entraîner ; seul le premier essai compte.`, `Heutiges Tagesquiz erledigt: <b>${official} %</b>${yesterday != null ? ` (gestern: ${yesterday} %)` : ''}. Du kannst sie zum Üben wiederholen; nur der erste Versuch zählt.`)}</p><button class="btn primary" id="go">${ICON.redo} S’entraîner sur ce défi</button></div>`;
+      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">${G.T(`Défi d’aujourd’hui relevé : <b>${official} %</b>${yesterday != null ? ` (hier : ${yesterday} %)` : ''}. Vous pouvez le refaire pour vous entraîner ; seul le premier essai compte.`, `Tagesquiz für heute erledigt: <b>${official} %</b>${yesterday != null ? ` (gestern: ${yesterday} %)` : ''}. Du kannst es zum Üben noch einmal spielen – gewertet wird nur der erste Durchgang.`)}</p><button class="btn primary" id="go">${ICON.redo} S’entraîner sur ce défi</button></div>`;
       $('#go', host).onclick = () => start(true);
     } else {
-      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">${G.T(`Dix questions, sans limite de temps. Seul le premier essai compte pour votre score du jour.${yesterday != null ? ` Hier : <b>${yesterday} %</b>.` : ''}`, `Zehn Fragen, ohne Zeitlimit. Nur der erste Versuch zählt für dein Tagesergebnis.${yesterday != null ? ` Gestern: <b>${yesterday} %</b>.` : ''}`)}</p><button class="btn primary" id="go">${ICON.play} Relever le défi</button></div>`;
+      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">${G.T(`Dix questions, sans limite de temps. Seul le premier essai compte pour votre score du jour. Si vous quittez le défi, les questions restantes comptent comme fausses.${yesterday != null ? ` Hier : <b>${yesterday} %</b>.` : ''}`, `Zehn Fragen, ohne Zeitlimit. Nur der erste Versuch zählt für dein Tagesergebnis. Wenn du das Quiz verlässt, zählen offene Fragen als falsch.${yesterday != null ? ` Gestern: <b>${yesterday} %</b>.` : ''}`)}</p><button class="btn primary" id="go">${ICON.play} Relever le défi</button></div>`;
       $('#go', host).onclick = () => start(false);
     }
     return el;
   }
 
   function memo() {
-    const g = GAMES[3]; const el = stage(g.title); const host = $('#st', el);
+    const g = GAMES.find((x) => x.id === 'memo'); const el = stage(g.title); const host = $('#st', el);
     const play = () => {
       const pairs = G.shuffle(pool().pairs).slice(0, 8);
       const cards = G.shuffle(pairs.flatMap((p, i) => [{ i, t: p[0], side: 'début' }, { i, t: p[1], side: 'fin' }]));
       let open = [], found = 0, moves = 0; const learned = [];
       host.innerHTML = `<div class="stage-top"><div class="stat"><span>Paires</span><b id="fd">0/8</b></div><div class="stat"><span>Coups</span><b id="mv">0</b></div></div>
-        <div class="memo">${cards.map((c, k) => `<button data-k="${k}" class="${c.side === 'début' ? 'is-start' : 'is-end'}" aria-label="Carte ${k + 1}, ${c.side} d’expression, face cachée"><small>${c.side}</small><span></span></button>`).join('')}</div>
+        <div class="memo">${cards.map((c, k) => `<button data-k="${k}" class="${c.side === 'début' ? 'is-start' : 'is-end'}" aria-label="${G.T(`Carte ${k + 1}, ${c.side} d’expression, face cachée`, `Karte ${k + 1}, ${c.side === 'début' ? 'Anfang' : 'Ende'}, verdeckt`)}"><small>${c.side === 'début' ? G.T('début', 'Anfang') : G.T('fin', 'Ende')}</small><span></span></button>`).join('')}</div>
         <div class="memo-meaning" id="mm" aria-live="polite"></div>`;
-      const face = (b, up) => { const c = cards[+b.dataset.k]; $('span', b).textContent = up ? c.t : ''; b.setAttribute('aria-label', up ? `${c.side} : ${c.t}` : `Carte ${+b.dataset.k + 1}, ${c.side} d’expression, face cachée`); };
+      const face = (b, up) => { const c = cards[+b.dataset.k]; $('span', b).textContent = up ? c.t : ''; b.setAttribute('aria-label', up ? `${c.side === 'début' ? G.T('début', 'Anfang') : G.T('fin', 'Ende')} : ${c.t}` : G.T(`Carte ${+b.dataset.k + 1}, ${c.side} d’expression, face cachée`, `Karte ${+b.dataset.k + 1}, ${c.side === 'début' ? 'Anfang' : 'Ende'}, verdeckt`)); };
       $$('.memo button', host).forEach((b) => b.onclick = () => {
         if (b.classList.contains('up') || b.classList.contains('found') || open.length === 2) return;
-        if (open.length === 1 && cards[+open[0].dataset.k].side === cards[+b.dataset.k].side) { G.toast(G.T(`Choisissez maintenant une carte « ${cards[+open[0].dataset.k].side === 'début' ? 'fin' : 'début'} ».`, `Wähle jetzt eine Karte „${cards[+open[0].dataset.k].side === 'début' ? 'Ende' : 'Anfang'}“.`)); return; }
+        if (open.length === 1 && cards[+open[0].dataset.k].side === cards[+b.dataset.k].side) { G.toast(G.T(`Choisissez maintenant une carte « ${cards[+open[0].dataset.k].side === 'début' ? 'fin' : 'début'} ».`, `Wähle jetzt eine „${cards[+open[0].dataset.k].side === 'début' ? 'Ende' : 'Anfang'}“-Karte.`)); return; }
         b.classList.add('up'); face(b, true); open.push(b);
         if (open.length < 2) return;
         moves++; $('#mv', host).textContent = moves;
@@ -304,7 +333,7 @@
         if (valid) {
           setTimeout(() => {
             x.classList.add('found'); y.classList.add('found'); open = []; found++; $('#fd', host).textContent = `${found}/8`;
-            const m = G.meaning(st.t, en.t); learned.push([st.t, en.t, m]);
+            const m = G.meaning(st.t, en.t); learned.push([st.t, en.t, m]); G.locSeen([st.t, en.t]);
             $('#mm', host).innerHTML = `<b>« ${esc(st.t)} ${esc(en.t)} »</b>${m ? ` : ${esc(m)}` : ''}`;
             if (found === 8) {
               const best = S.data.games.memo; if (best == null || moves < best) S.data.games.memo = moves; S.markDay(1); S.save();
@@ -322,42 +351,91 @@
   }
 
   function express() {
-    const g = GAMES[4]; const el = stage(g.title); const host = $('#st', el);
-    const MODES = [['end', G.T('Trouver la fin', 'Ende finden')], ['start', G.T('Trouver le début', 'Anfang finden')], ['meaning', G.T('Comprendre le sens', 'Bedeutung erkennen')], ['expr', G.T('Du sens à l’expression', 'Von der Bedeutung zur Wendung')]];
+    const g = GAMES.find((x) => x.id === 'express'); const el = stage(g.title); const host = $('#st', el);
+    const MODES = [
+      ['end', G.T('Trouver la fin', 'Ende finden'), 'Joindre … → les deux bouts'],
+      ['start', G.T('Trouver le début', 'Anfang finden'), '… les deux bouts → Joindre'],
+      ['meaning', G.T('Comprendre le sens', 'Bedeutung erkennen'), G.T('expression → sens', 'Redewendung → Bedeutung')],
+      ['expr', G.T('Du sens à l’expression', 'Von der Bedeutung zur Redewendung'), G.T('sens → expression', 'Bedeutung → Redewendung')],
+    ];
     const total = pool().pairs.length;
-    // Auswahl : erst Unbekanntes und zuletzt Verpasstes, dann der Rest, jeweils gemischt
+    const daysAgo = (d) => (d ? Math.round((new Date(G.today()) - new Date(d)) / 864e5) : 999);
+    // Runde : etwa 50 % in Arbeit, 30 % neu, 20 % sichere Redewendungen, die wieder fällig sind (≥ 3 Tage)
     const choosePairs = (n) => {
       const P = G.shuffle(pool().pairs);
-      const weight = (p) => { const st = locStat(p); return st.n === 0 ? 1 : st.ok === 0 ? 0 : 2 + st.ok; };
-      return P.sort((a, b) => weight(a) - weight(b)).slice(0, n);
+      const working = P.filter((p) => { const s = peekStat(p); return s.n > 0 && s.ok < 2; }).sort((a, b) => peekStat(a).last.localeCompare(peekStat(b).last));
+      const fresh = P.filter((p) => peekStat(p).n === 0);
+      const due = P.filter((p) => mastered(p) && daysAgo(peekStat(p).last) >= 3);
+      const rest = P.filter((p) => mastered(p) && daysAgo(peekStat(p).last) < 3);
+      const out = [...working.slice(0, Math.ceil(n * 0.5)), ...fresh.slice(0, Math.ceil(n * 0.3)), ...due.slice(0, Math.ceil(n * 0.2))];
+      for (const p of [...working, ...fresh, ...due, ...rest]) { if (out.length >= n) break; if (!out.includes(p)) out.push(p); }
+      return G.shuffle(out.slice(0, n));
     };
+    const recKey = (mode, len) => `express:${mode}:${len}`;
     const menu = () => {
-      const prefs = S.data.prefs; const mode = prefs.exMode || 'end', len = prefs.exLen || 12;
+      const prefs = S.data.prefs; const mode = prefs.exMode || 'end', len = Math.min(prefs.exLen || 12, total);
+      const rec = S.data.games[recKey(mode, len)];
       host.innerHTML = `<div class="flash-card">
         <div class="loc-progress"><span class="ring ${G.locMastered() === total ? 'ok' : ''}" style="--p:${(G.locMastered() / total) * 100}" data-v="${G.locMastered()}"></span>
-          <span><b>${G.T(`${G.locMastered()} expressions sur ${total} maîtrisées`, `${G.locMastered()} von ${total} Redewendungen sicher`)}</b><br><span style="color:var(--muted);font-size:14px">${G.T('Une expression est maîtrisée après deux bonnes réponses de suite.', 'Eine Redewendung gilt als sicher nach zwei richtigen Antworten in Folge.')}</span></span></div>
-        <div class="eyebrow" style="margin:18px 0 8px">${G.T('Variante', 'Spielart')}</div>
-        <div class="seg seg-wrap" id="modes">${MODES.map(([k, l]) => `<button data-m="${k}" class="${mode === k ? 'on' : ''}">${l}</button>`).join('')}<button data-m="mix" class="${mode === 'mix' ? 'on' : ''}">${G.T('Mélange', 'Gemischt')}</button></div>
+          <span><b>${G.T(`${G.locMastered()} expressions sur ${total} maîtrisées`, `${G.locMastered()} von ${total} Redewendungen sicher`)}</b><br><span style="color:var(--muted);font-size:14px">${G.T('Maîtrisée après deux bonnes réponses de suite ; elle revient ensuite pour vérification après quelques jours.', 'Sicher nach zwei richtigen Antworten in Folge; nach ein paar Tagen kommt sie zur Kontrolle wieder.')}</span></span></div>
+        <div class="eyebrow" style="margin:20px 0 8px">${G.T('Variante', 'Spielart')}</div>
+        <div class="mode-grid" id="modes">${MODES.map(([k, l, ex]) => `<button data-m="${k}" class="mode-tile ${mode === k ? 'on' : ''}"><b>${l}</b><span lang="fr">${esc(ex)}</span></button>`).join('')}<button data-m="mix" class="mode-tile wide ${mode === 'mix' ? 'on' : ''}"><b>${G.T('Mélange', 'Gemischt')}</b><span>${G.T('les quatre variantes en alternance', 'alle vier Spielarten abwechselnd')}</span></button></div>
         <div class="eyebrow" style="margin:16px 0 8px">${G.T('Nombre de questions', 'Anzahl der Fragen')}</div>
         <div class="seg" id="lens">${[12, 20, total].map((n) => `<button data-n="${n}" class="${len === n ? 'on' : ''}">${n === total ? G.T('Toutes', 'Alle') + ` (${n})` : n}</button>`).join('')}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:20px"><button class="btn primary" id="go">${ICON.play} ${G.T('Jouer', 'Spielen')}</button><button class="btn" id="learn">${ICON.cards} ${G.T('Cartes d’apprentissage', 'Lernkarten ansehen')}</button></div>
-        ${S.data.games['express:' + mode] != null ? `<p style="margin:14px 0 0;color:var(--muted);font-size:14px">${G.T('Record dans cette variante', 'Rekord in dieser Spielart')} : ${S.data.games['express:' + mode]}</p>` : ''}</div>`;
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:20px"><button class="btn primary" id="go">${ICON.play} ${G.T('Jouer', 'Spielen')}</button><button class="btn" id="cards">${ICON.cards} ${G.T('Cartes d’apprentissage', 'Lernkarten')}</button><button class="btn ghost" id="list">${G.T('Voir toutes les expressions', 'Alle Redewendungen ansehen')}</button></div>
+        ${rec != null ? `<p style="margin:14px 0 0;color:var(--muted);font-size:14px">${G.T(`Record pour cette variante et ce nombre de questions : ${rec}`, `Rekord für diese Spielart und Länge: ${rec}`)}</p>` : ''}</div>`;
       $$('#modes button', host).forEach((b) => b.onclick = () => { S.data.prefs.exMode = b.dataset.m; S.save(); menu(); });
       $$('#lens button', host).forEach((b) => b.onclick = () => { S.data.prefs.exLen = +b.dataset.n; S.save(); menu(); });
-      $('#go', host).onclick = () => play(mode, len);
-      $('#learn', host).onclick = learn;
+      $('#go', host).onclick = () => play(mode, len, choosePairs(len));
+      $('#cards', host).onclick = () => cards(false);
+      $('#list', host).onclick = list;
     };
-    const learn = () => {
+    // Lernkarten : Vorderseite französisch, Bedeutung aufdecken, Selbsteinschätzung zählt für den Lernstand
+    const cards = (onlyOpen) => {
+      let P = G.shuffle(pool().pairs); if (onlyOpen) P = P.filter((p) => !mastered(p));
+      let k = 0, knew = 0;
+      const draw = () => {
+        if (k >= P.length || !P.length) {
+          S.markDay(1); S.save();
+          host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">${G.T('Cartes terminées', 'Karten durchgearbeitet')}</div><div class="big-num">${knew}/${P.length}</div><p>${G.T(`${G.locMastered()} expressions sur ${total} maîtrisées.`, `${G.locMastered()} von ${total} Redewendungen sicher.`)}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn primary" id="again">${G.T('Revoir celles à apprendre', 'Nur die offenen wiederholen')}</button><button class="btn" id="back">${G.T('Retour', 'Zurück')}</button></div></div>`;
+          $('#again', host).onclick = () => cards(true); $('#back', host).onclick = menu; return;
+        }
+        const p = P[k];
+        host.innerHTML = `<div class="stage-top"><button class="btn small ghost" id="back">${ICON.back} ${G.T('Retour', 'Zurück')}</button><span class="grow"></span><div class="seg"><button data-f="0" class="${onlyOpen ? '' : 'on'}">${G.T('Toutes', 'Alle')}</button><button data-f="1" class="${onlyOpen ? 'on' : ''}">${G.T('À apprendre', 'Noch nicht sicher')}</button></div><span class="chip">${k + 1}/${P.length}</span></div>
+          <div class="flash-card loc-flip"><div class="loc-q" lang="fr">${esc(p[0])} <b>${esc(p[1])}</b>${canSpeak() ? ` <button class="icon-btn speak" data-say="${esc(p[0] + ' ' + p[1])}" aria-label="${G.T('Écouter', 'Anhören')}">${ICON.sound}</button>` : ''}</div>
+          <div class="loc-back" id="back-side" hidden>${esc(G.meaning(p[0], p[1]))}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px" id="acts"><button class="btn primary" id="show">${G.T('Montrer le sens', 'Bedeutung zeigen')} <kbd class="hide-touch">Enter</kbd></button></div></div>`;
+        $('#back', host).onclick = menu;
+        $$('[data-f]', host).forEach((b) => b.onclick = () => cards(b.dataset.f === '1'));
+        $$('[data-say]', host).forEach((b) => b.onclick = () => G.speak(b.dataset.say));
+        $('#show', host).onclick = () => {
+          $('#back-side', host).hidden = false;
+          $('#acts', host).innerHTML = `<button class="btn primary" data-r="1">${ICON.check} ${G.T('Je savais', 'Wusste ich')} <kbd class="hide-touch">1</kbd></button><button class="btn" data-r="0">${G.T('Je ne savais pas', 'Wusste ich nicht')} <kbd class="hide-touch">2</kbd></button>`;
+          $$('[data-r]', host).forEach((b) => b.onclick = () => { const ok = b.dataset.r === '1'; writeStat(p, ok); if (ok) knew++; else G.review.add(keyOf({ t: 'p', s: p[0], e: p[1] }), { t: 'p', s: p[0], e: p[1] }); S.save(); k++; draw(); });
+        };
+      };
+      const onKey = (ev) => {
+        if (!host.isConnected) return document.removeEventListener('keydown', onKey);
+        if (ev.target.closest && ev.target.closest('input, textarea, select')) return;
+        const sh = $('#show', host); const r1 = $('[data-r="1"]', host), r0 = $('[data-r="0"]', host);
+        if (ev.key === 'Enter' && sh) { ev.preventDefault(); sh.click(); } else if (ev.key === '1' && r1) r1.click(); else if (ev.key === '2' && r0) r0.click();
+      };
+      document.addEventListener('keydown', onKey);
+      draw();
+    };
+    const list = () => {
       const P = [...pool().pairs].sort((a, b) => fold(a[0]).localeCompare(fold(b[0])));
-      host.innerHTML = `<div class="stage-top"><button class="btn small ghost" id="back">${ICON.back} ${G.T('Retour', 'Zurück')}</button><span class="grow"></span><span class="chip">${G.T(`${G.locMastered()} / ${total} maîtrisées`, `${G.locMastered()} / ${total} sicher`)}</span></div>
-        <div class="loc-list">${P.map((p) => `<div class="loc-item ${mastered(p) ? 'ok' : ''}"><div class="loc-expr" lang="fr">${esc(p[0])} <b>${esc(p[1])}</b>${canSpeak() ? ` <button class="icon-btn speak" data-say="${esc(p[0] + ' ' + p[1])}" aria-label="${G.T('Écouter', 'Anhören')}">${ICON.sound}</button>` : ''}</div><div class="loc-mean">${esc(G.meaning(p[0], p[1]))}</div></div>`).join('')}</div>`;
-      $('#back', host).onclick = menu;
+      const back = `<button class="btn small ghost" data-back>${ICON.back} ${G.T('Retour', 'Zurück')}</button>`;
+      host.innerHTML = `<div class="stage-top">${back}<span class="grow"></span><span class="chip">${G.T(`${G.locMastered()} / ${total} maîtrisées`, `${G.locMastered()} / ${total} sicher`)}</span></div>
+        <div class="loc-list">${P.map((p) => `<div class="loc-item ${mastered(p) ? 'ok' : ''}"><div class="loc-expr" lang="fr">${esc(p[0])} <b>${esc(p[1])}</b>${canSpeak() ? ` <button class="icon-btn speak" data-say="${esc(p[0] + ' ' + p[1])}" aria-label="${G.T('Écouter', 'Anhören')}">${ICON.sound}</button>` : ''}</div><div class="loc-mean">${esc(G.meaning(p[0], p[1]))}</div></div>`).join('')}</div>
+        <div style="margin-top:14px">${back}</div>`;
+      $$('[data-back]', host).forEach((b) => b.onclick = menu);
       $$('[data-say]', host).forEach((b) => b.onclick = () => G.speak(b.dataset.say));
     };
-    const play = (mode, len) => {
-      const rounds = choosePairs(len);
+    const play = (mode, len, rounds) => {
+      const before = G.locMastered();
       let k = 0, good = 0, combo = 0, best = 0; const missed = [];
-      host.innerHTML = `<div class="stage-top"><div class="stat"><span>${G.T('Expression', 'Wendung')}</span><b id="qk"></b></div><div class="stat"><span>${G.T('Justes', 'Richtig')}</span><b id="gd">0</b></div><div class="stat"><span>${G.T('Série', 'Serie')}</span><b id="cb">0</b></div><span class="grow"></span><button class="btn small ghost" id="stop">${G.T('Arrêter', 'Beenden')}</button></div><div class="bar" style="margin-bottom:14px"><i id="pb" style="width:0%"></i></div><div id="q"></div>`;
+      host.innerHTML = `<div class="stage-top sticky"><div class="stat"><span>${G.T('Expression', 'Redewendung')}</span><b id="qk"></b></div><div class="stat"><span>${G.T('Justes', 'Richtig')}</span><b id="gd">0</b></div><div class="stat"><span>${G.T('Série', 'Serie')}</span><b id="cb">0</b></div><span class="grow"></span><button class="btn small ghost" id="stop">${G.T('Arrêter', 'Beenden')}</button></div><div class="bar" style="margin-bottom:14px"><i id="pb" style="width:0%"></i></div><div id="q"></div>`;
       $('#stop', host).onclick = () => finish(true);
       const step = () => {
         if (k >= rounds.length) return finish(false);
@@ -370,14 +448,20 @@
         }, { mode: m });
       };
       const finish = (stopped) => {
-        const key = 'express:' + mode;
+        if (stopped && k === 0) return menu(); // sofort beendet : zählt nicht
+        const key = recKey(mode, rounds.length);
+        const isRec = !stopped && good > (S.data.games[key] || 0);
         if (!stopped) S.data.games[key] = Math.max(S.data.games[key] || 0, good);
         missed.forEach((it) => G.review.add(keyOf(it), it)); S.markDay(1); S.save(); G.updateBadge();
-        summary(host, { big: `${good}/${stopped ? k : rounds.length}`, label: stopped ? G.T('Partie arrêtée', 'Spiel beendet') : g.title,
-          text: G.T(`Meilleure série : ${best}. ${G.locMastered()} expressions sur ${total} maîtrisées.${missed.length ? ` ${plural(missed.length, 'expression')} ${missed.length > 1 ? 'rejoignent' : 'rejoint'} la révision.` : ''}`,
-            `Längste Serie: ${best}. ${G.locMastered()} von ${total} Redewendungen sicher.${missed.length ? ` ${plural(missed.length, 'expression')} ${missed.length > 1 ? 'kommen' : 'kommt'} in die Wiederholung.` : ''}`),
+        const gained = G.locMastered() - before; const n = stopped ? k : rounds.length;
+        const label = good === n && !stopped ? G.T('Parfait !', 'Perfekt!') : isRec ? G.T('Nouveau record !', 'Neuer Rekord!') : stopped ? G.T('Partie arrêtée', 'Spiel beendet') : g.title;
+        summary(host, { big: `${good}/${n}`, label,
+          text: G.T(`Meilleure série : ${best}. ${gained > 0 ? `+${gained} maîtrisées · ` : ''}${G.locMastered()}/${total} expressions maîtrisées.`,
+            `Längste Serie: ${best}. ${gained > 0 ? `+${gained} neu sicher · ` : ''}${G.locMastered()}/${total} Redewendungen sicher.`),
           again: menu, againLabel: G.T('Nouvelle partie', 'Neue Runde'),
-          extra: missed.length ? `<div style="text-align:left;margin:0 0 18px"><div class="eyebrow" style="margin-bottom:8px">${G.T('À retenir', 'Zum Merken')}</div><div class="loc-list">${missed.map((it) => `<div class="loc-item"><div class="loc-expr" lang="fr">${esc(it.s)} <b>${esc(it.e)}</b></div><div class="loc-mean">${esc(G.meaning(it.s, it.e))}</div></div>`).join('')}</div></div>` : '' });
+          extraButtons: missed.length ? `<button class="btn primary" id="retry">${ICON.redo} ${G.T('Rejouer les erreurs', 'Fehler nochmal üben')} (${missed.length})</button>` : '',
+          after: missed.length ? `<div class="section-title"><h2>${G.T('À retenir', 'Zum Merken')}</h2></div><div class="loc-list">${missed.map((it) => `<div class="loc-item"><div class="loc-expr" lang="fr">${esc(it.s)} <b>${esc(it.e)}</b></div><div class="loc-mean">${esc(G.meaning(it.s, it.e))}</div></div>`).join('')}</div>` : '' });
+        const r = $('#retry', host); if (r) r.onclick = () => play(mode, missed.length, missed.map((it) => [it.s, it.e]));
       };
       step();
     };
@@ -392,7 +476,7 @@
     return { dist, prev };
   }
   function chemin() {
-    const g = GAMES[2]; const el = stage(g.title); const host = $('#st', el);
+    const g = GAMES.find((x) => x.id === 'chemin'); const el = stage(g.title); const host = $('#st', el);
     const play = () => {
       const cand = Object.values(D.rules).filter((r) => !r.stub && r.out.length >= 3 && r.in.length >= 2);
       let start, target, best, tries = 0;
@@ -453,7 +537,7 @@
     if (!queue.length) {
       const next = Object.values(S.data.review).map((r) => r.due).sort()[0];
       const nextTxt = next ? new Date(next + 'T12:00').toLocaleDateString(G.T('fr-FR', 'de-DE'), { day: 'numeric', month: 'long' }) : '';
-      host.innerHTML = `<div class="empty"><strong>${total ? G.T('Rien à revoir aujourd’hui.', 'Heute ist nichts zu wiederholen.') : G.T('Votre pile de révision est vide.', 'Dein Wiederholungsstapel ist leer.')}</strong>${total ? G.T(`${plural(total, 'item')} en attente, prochain rendez-vous le ${nextTxt}.`, `${plural(total, 'item')} warten, nächster Termin am ${nextTxt}.`) : G.T('Faites quelques exercices : les lacunes manquées viendront s’y ranger.', 'Mach ein paar Übungen – verpasste Lücken landen dann hier.')}${S.data.games.acquis ? `<br>${plural(S.data.games.acquis, 'item acquis', 'items acquis')}${G.T(' jusqu’ici.', ' bisher.')}` : ''}<div style="margin-top:14px"><a class="btn primary" href="#/jeu/sprint">${ICON.bolt} ${G.T('Une course contre la montre ?', 'Wie wär’s mit einem Wettlauf gegen die Zeit?')}</a></div></div>`;
+      host.innerHTML = `<div class="empty"><strong>${total ? G.T('Rien à revoir aujourd’hui.', 'Heute ist nichts zu wiederholen.') : G.T('Votre pile de révision est vide.', 'Dein Wiederholungsstapel ist leer.')}</strong>${total ? G.T(`${plural(total, 'item')} en attente, prochain rendez-vous le ${nextTxt}.`, `${plural(total, 'item')} warten, nächster Termin am ${nextTxt}.`) : G.T('Faites quelques exercices : les lacunes manquées viendront s’y ranger.', 'Mach ein paar Übungen – verpasste Lücken landen dann hier.')}${S.data.games.acquis ? `<br>${G.T(`${plural(S.data.games.acquis, 'item acquis', 'items acquis')} jusqu’ici.`, `Bisher sicher gelernt: ${plural(S.data.games.acquis, 'item')}.`)}` : ''}<div style="margin-top:14px"><a class="btn primary" href="#/jeu/sprint">${ICON.bolt} ${G.T('Une course contre la montre ?', 'Wie wär’s mit einem Wettlauf gegen die Zeit?')}</a></div></div>`;
       return el;
     }
     const n0 = queue.length; let doneN = 0, good = 0; const graded = new Set();
@@ -461,7 +545,7 @@
     const step = () => {
       if (!queue.length) {
         S.markDay(1); S.save(); G.updateBadge();
-        host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">Séance terminée</div><div style="font:800 56px/1 var(--f-display);color:var(--accent);margin:12px 0">${good}/${n0}</div><p style="font:18px/1.5 var(--f-read)">${G.T('Réussis du premier coup : ils montent d’une boîte. Les autres ont été retravaillés jusqu’à la bonne réponse et reviendront demain.', 'Beim ersten Versuch richtig: Sie rücken ein Fach weiter. Die anderen hast du bis zur richtigen Antwort geübt; sie kommen morgen wieder.')}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${G.review.due().length ? `<a class="btn primary" href="#/revision" data-reload>${G.T('Encore', 'Noch')} ${plural(Math.min(20, G.review.due().length), 'item')}</a>` : ''}<a class="btn" href="#/">Retour à l’accueil</a></div></div>`;
+        host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">Séance terminée</div><div style="font:800 56px/1 var(--f-display);color:var(--accent);margin:12px 0">${good}/${n0}</div><p style="font:18px/1.5 var(--f-read)">${G.T('Réussis du premier coup : ils montent d’une boîte. Les autres ont été retravaillés jusqu’à la bonne réponse et reviendront demain.', 'Was beim ersten Versuch richtig war, rückt eine Stufe weiter. Den Rest hast du bis zur richtigen Antwort geübt; er kommt morgen wieder.')}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${G.review.due().length ? `<a class="btn primary" href="#/revision" data-reload>${G.T('Encore', 'Noch')} ${plural(Math.min(20, G.review.due().length), 'item')}</a>` : ''}<a class="btn" href="#/">Retour à l’accueil</a></div></div>`;
         const rl = $('[data-reload]', host); if (rl) rl.onclick = (ev) => { ev.preventDefault(); G.refresh(); };
         return;
       }
@@ -473,7 +557,7 @@
         if (!graded.has(it.key)) { graded.add(it.key); G.review.grade(it.key, success); if (success) { good++; $('#gd', host).textContent = good; } }
         if (!success && !skipped) queue.splice(Math.min(3, queue.length), 0, it); else doneN++;
         S.save(); step();
-      }, { wide: true });
+      }, { wide: true, auto: false, mode: it.t === 'p' ? ['end', 'start', 'meaning', 'expr'][(it.n || 0) % 4] : undefined });
     };
     step();
     return el;

@@ -70,7 +70,10 @@
     let col = null, list = [], k = -1;
     for (const c of D.collections) { for (const g of c.groups) { const i = g.items.findIndex((x) => x.id === e.id); if (i >= 0) { col = c; list = g.items; k = i; break; } } if (col) break; }
     const prev = list[k - 1], next = list[k + 1];
-    const helps = (e.help || []).filter((x) => /^#\/regle\//.test(x.href));
+    const seenH = new Set();
+    const helps = (e.help || []).filter((x) => /^#\/regle\//.test(x.href) && !seenH.has(G.ruleTitle(x.href.split('/')[2])) && seenH.add(G.ruleTitle(x.href.split('/')[2])));
+    // Redewendungs-Übungen : Erklärseite, Grundregel und Spiel verlinken
+    if (e.type === 'match') { const n = e.id.slice(-1); [`#/regle/locutions${n}-explications`, '#/regle/1-1-33-la-locution'].forEach((href) => { if (G.rule(href.split('/')[2]) && !helps.some((x) => x.href === href)) helps.push({ href, label: '' }); }); }
     const rulesExtra = (e.rules || []).filter((id) => !helps.some((x) => x.href.includes('/' + id)));
     const el = h(`<div class="page"><div class="ex-layout">
       <div>
@@ -91,6 +94,7 @@
           ${helps.length + rulesExtra.length ? `<ul class="linklist">${helps.map((x) => helpItem(x.href, helpLabel(x))).join('')}${rulesExtra.map((id) => helpItem('#/regle/' + id, G.ruleTitle(id))).join('')}</ul>
           <p style="margin:10px 0 0;font-size:12.5px;color:var(--muted)">${ICON.side.replace('<svg', '<svg style="width:14px;height:14px;vertical-align:-2px"')} ouvre la fiche à côté, sans quitter l’exercice.</p>` : '<p style="margin:0;color:var(--muted);font-size:14px">Pas de fiche d’aide associée. Utilisez la recherche (Ctrl K).</p>'}
         </div>
+        ${e.type === 'match' ? `<div class="rail-box"><h3>${G.T('Jouer', 'Spielen')}</h3><a class="btn small" href="#/jeu/express">${ICON.quote} ${G.T('Locution express', 'Redewendungs-Express')}</a></div>` : ''}
         ${(e.nav || []).length ? `<div class="rail-box"><h3>Voir aussi</h3><ul class="linklist">${e.nav.map((x) => `<li><a href="${esc(x.href)}"><span class="t">${esc(x.label)}</span></a></li>`).join('')}</ul></div>` : ''}
         <div class="rail-box"><h3>Comment ça marche</h3><p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5">${G.T(HOWTO[e.type], HOWTO_DE[e.type])}</p></div>
       </aside></div></div>`);

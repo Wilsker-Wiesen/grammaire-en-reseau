@@ -44,7 +44,7 @@
         <li><b>Übe</b>: Zu jeder Fiche gibt es passende Übungen; in einer Übung öffnet sich die Hilfe-Fiche daneben.</li>
         <li><b>Komm jeden Tag wieder</b>: erst das Tagesquiz, dann „Wiederholen“, wo deine Fehler zur richtigen Zeit zurückkommen.</li></ol>`)}</div>
         <div class="welcome-act"><a class="btn primary" href="#/guide">Mode d’emploi</a><a class="btn" href="#/themes">Voir le plan</a><a class="btn" href="#/jeu/defi">Faire le défi du jour</a><button class="btn ghost" id="wclose">Masquer</button></div></section>` : ''}
-      <section class="daily" aria-label="Aujourd’hui">
+      <section class="daily" aria-label="${G.T('Aujourd’hui', 'Heute')}">
         <div class="daily-goal"><span class="ring ${acts >= GOAL ? 'ok' : ''}" style="--p:${Math.min(100, (acts / GOAL) * 100)}" data-v="${Math.min(acts, GOAL)}/${GOAL}"></span>
           <span class="txt"><b>${acts >= GOAL ? 'Objectif du jour atteint' : 'Objectif du jour'}</b><span>${acts >= GOAL ? 'Bravo. Tout le reste est du bonus.' : `${GOAL} activités : exercice, défi, révision ou jeu`}</span></span></div>
         <div class="daily-streak"><b class="num">${streak.n}</b><span>${streak.n > 1 ? 'jours de suite' : 'jour de suite'}${!streak.today && streak.n ? ' · en jeu aujourd’hui' : ''}</span></div>
@@ -290,7 +290,7 @@
     const shown = res.filter((r) => kind === 'tout' || (kind === 'ex' ? r.kind === 'ex' : r.kind !== 'ex'));
     const el = page(`<div class="page-head"><div class="eyebrow">Recherche</div><h1>${q ? G.T(`« ${esc(q)} »`, `„${esc(q)}“`) : G.T('Rechercher', 'Suchen')}</h1></div>
       <div class="toolbar"><label class="filter">${ICON.search}<input id="sq" type="search" value="${esc(q)}" placeholder="Mot, expression, règle…" autocomplete="off"></label>
-      <div class="seg">${[['tout', 'Tout', res.length], ['rule', 'Fiches', res.filter((r) => r.kind !== 'ex').length], ['ex', 'Exercices', res.filter((r) => r.kind === 'ex').length]].map(([k, l, n]) => `<button data-k="${k}" class="${kind === k ? 'on' : ''}">${l} <span class="num">${n}</span></button>`).join('')}</div></div>
+      <div class="seg">${[['tout', G.T('Tout', 'Alle'), res.length], ['rule', 'Fiches', res.filter((r) => r.kind !== 'ex').length], ['ex', 'Exercices', res.filter((r) => r.kind === 'ex').length]].map(([k, l, n]) => `<button data-k="${k}" class="${kind === k ? 'on' : ''}">${l} <span class="num">${n}</span></button>`).join('')}</div></div>
       <div style="max-width:820px">${shown.map((r) => `<a class="search-hit" href="${esc(r.href)}"><small>${r.kind === 'ex' ? G.T('Exercice', 'Übung') : 'Fiche'}</small><b>${G.mark(r.title, r.terms)}</b><span>${G.snippet(r, r.terms, 240)}</span></a>`).join('') || (q ? `<div class="empty"><strong>Aucun résultat.</strong>Essayez sans accents, au singulier, ou avec un seul mot.</div>` : '')}</div>`);
     const inp = $('#sq', el);
     inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') G.go('#/recherche?q=' + encodeURIComponent(inp.value.trim()), { replace: true }); });
@@ -311,7 +311,7 @@
     const day0 = new Date(); day0.setDate(day0.getDate() - (7 * 20 - 1) - ((day0.getDay() + 6) % 7));
     for (let i = 0; i < 7 * 20 + ((new Date().getDay() + 6) % 7) + 1; i++) {
       const d = new Date(day0); d.setDate(d.getDate() + i); const k = G.ymd(d); const n = S.data.days[k];
-      cells.push(`<i title="${k} : ${n || 0} activité(s)" data-l="${n == null ? 0 : n === 0 ? 1 : n < 3 ? 2 : n < 8 ? 3 : 4}"></i>`);
+      cells.push(`<i title="${G.T(`${k} : ${n || 0} activité(s)`, `${d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })}: ${n || 0} ${n === 1 ? 'Aktivität' : 'Aktivitäten'}`)}" data-l="${n == null ? 0 : n === 0 ? 1 : n < 3 ? 2 : n < 8 ? 3 : 4}"></i>`);
     }
     const colRows = D.collections.map((c) => { const ids = c.groups.flatMap((g) => g.items.map((i) => i.id)); const d = ids.filter((id) => S.exResult(id)).length; return `<div class="row"><a href="#/exercices/${c.id}">${esc(G.tx(c.title))}</a><div class="bar"><i style="width:${(d / ids.length) * 100}%"></i></div><span class="num">${d}/${ids.length}</span></div>`; }).join('');
     const themeRows = D.themes.map((t, i) => { const ids = t.sections.flatMap((s) => s.children.map((c) => c.id)); const d = ids.filter((x) => S.data.read[x]).length; return `<div class="row"><a href="#/themes/${i}">${i + 1}. ${esc(G.tx(t.title))}</a><div class="bar"><i style="width:${(d / ids.length) * 100}%"></i></div><span class="num">${d}/${ids.length}</span></div>`; }).join('');
@@ -334,6 +334,12 @@
         <div class="panel"><h3>À retravailler</h3>${weak.length ? `<div class="ex-rows">${weak.map((k) => exRow(k)).join('')}</div>` : '<p style="color:var(--muted);margin:0">Les exercices sous 80 % apparaîtront ici.</p>'}</div>
         <div class="panel"><h3>Favoris</h3>${favs.length ? `<ul class="linklist">${favs.map((x) => `<li><a href="#/regle/${x}">${ICON.star}<span class="t">${esc(G.ruleTitle(x))}</span></a></li>`).join('')}</ul>` : '<p style="color:var(--muted);margin:0">Ajoutez une fiche aux favoris avec l’étoile en haut de la fiche.</p>'}</div>
         <div class="panel"><h3>Mes notes</h3>${notes.length ? `<ul class="linklist">${notes.map((x) => `<li><a href="#/regle/${x}">${ICON.note}<span class="t"><b>${esc(G.ruleTitle(x))}</b><br><span style="color:var(--muted);font-size:13px">${esc(S.data.notes[x].slice(0, 120))}</span></span></a></li>`).join('')}</ul>` : '<p style="color:var(--muted);margin:0">Le bouton « Note » d’une fiche ouvre un bloc-notes personnel.</p>'}</div>
+        <div class="panel"><h3>${G.T('Jeux', 'Spiele')}</h3><div class="bars">
+          ${G.pool ? `<div class="row"><a href="#/jeu/express">${G.T('Expressions maîtrisées', 'Redewendungen sicher')}</a><div class="bar"><i style="width:${(G.locMastered() / G.pool().pairs.length) * 100}%"></i></div><span class="num">${G.locMastered()}/${G.pool().pairs.length}</span></div>` : ''}
+          <div class="row"><a href="#/jeu/defi">${G.T('Défi du jour', 'Tagesquiz')}</a><span></span><span class="num">${S.data.games['defi:' + G.today()] != null ? S.data.games['defi:' + G.today()] + ' %' : '–'}</span></div>
+          <div class="row"><a href="#/jeu/sprint">${G.T('Record (course)', 'Rekord Wettlauf')}</a><span></span><span class="num">${S.data.games['sprint:'] ?? '–'}</span></div>
+          <div class="row"><a href="#/jeu/memo">${G.T('Mémo (moins de coups)', 'Memo (wenigste Züge)')}</a><span></span><span class="num">${S.data.games.memo ?? '–'}</span></div>
+        </div></div>
         <div class="panel"><h3>Réglages</h3>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div><div class="eyebrow" style="margin-bottom:6px">Taille du texte</div><div class="seg" id="size-seg">${[['s', 'Petite'], ['', 'Normale'], ['l', 'Grande']].map(([k, l]) => `<button data-s="${k}" class="${(S.data.prefs.size || '') === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
@@ -398,10 +404,10 @@
   };
 
   V.aproposDE = function () {
-    return page(`<div class="page-head"><div class="eyebrow">Über das Programm</div><h1>Grammaire en réseau</h1></div>
+    return page(G.deFix(`<div class="page-head"><div class="eyebrow">Über das Programm</div><h1>Grammaire en réseau</h1></div>
       <div class="about prose">
-        <p>Grammaire en réseau ist ein Programm von Jan Wilsker-Wiesen, erstellt mit Claude. Es vereint Regelfiches, Übungen und Spiele zur französischen Grammatik, die miteinander verknüpft sind: Jede Regel verweist auf die Begriffe, die sie voraussetzt, und auf die Übungen, die sie trainieren.</p>
-        <p>Die Erklärungen sind auf Deutsch, alle Beispiele, Übungssätze und Lösungen bleiben Französisch. Über „Mein Fortschritt“ → „Sprache“ oder den Sprachknopf oben lässt sich jederzeit auf die französische Fassung umschalten.</p>
+        <p>Grammaire en réseau ist ein Programm von Jan Wilsker-Wiesen, erstellt mit Claude. Es vereint Regeln, Übungen und Spiele zur französischen Grammatik und verknüpft sie miteinander: Jede Regel verweist auf die Begriffe, die sie voraussetzt, und auf die Übungen, mit denen du sie trainierst.</p>
+        <p>Die Erklärungen sind auf Deutsch, alle Beispiele, Übungssätze und Lösungen bleiben auf Französisch. Über „Mein Fortschritt“ → „Sprache“ oder den Sprachknopf oben lässt sich jederzeit auf die französische Fassung umschalten.</p>
         <h2>So arbeitest du damit</h2>
         <ul>
           <li><strong>Lesen</strong>: Starte bei einem Thema oder im Register. Unterstrichene Links führen zu verwandten Begriffen; fahre mit der Maus darüber für eine Vorschau.</li>
@@ -417,7 +423,7 @@
           <kbd>Alt ←</kbd><span>zur vorherigen Seite</span>
           <kbd>Esc</kbd><span>Suche oder Seitenleiste schließen</span>
         </div>
-      </div>`);
+      </div>`));
   };
 
   // ------------------------------------------------------------------ mode d'emploi
@@ -464,7 +470,7 @@
   V.guideDE = function () {
     const firstSec = (ti) => { const t = D.themes[ti]; const c = t && t.sections[0] && t.sections[0].children[0]; return c ? '#/regle/' + c.id : '#/themes/' + ti; };
     const step = (n, title, body) => `<div class="guide-step"><span class="num">${n}</span><div><h3>${title}</h3>${body}</div></div>`;
-    return page(`<div class="page-head"><div class="eyebrow">Anleitung</div><h1>So nutzt du das Programm</h1>
+    return page(G.deFix(`<div class="page-head"><div class="eyebrow">Anleitung</div><h1>So nutzt du das Programm</h1>
       <p class="lead">Du musst die Fiches nicht wahllos lesen: Das Programm hat ein Inhaltsverzeichnis, ein Register und eine Suche. Hier steht, wie du dich zurechtfindest, und ein einfacher Plan für jeden Tag.</p></div>
       <div class="guide">
         <section class="panel guide-box"><h2>1. Finden, was du suchst</h2>
@@ -478,6 +484,7 @@
           ${step(1, 'Das Tagesquiz', '<p>Zehn Fragen, ohne Zeitdruck. <a href="#/jeu/defi">Tagesquiz starten</a></p>')}
           ${step(2, 'Wiederholen', '<p>Fehler der letzten Tage kommen zur richtigen Zeit zurück. <a href="#/revision">Wiederholung öffnen</a></p>')}
           ${step(3, 'Ein neues Thema', '<p>Lies eine Fiche und mach dann eine Übung aus der Spalte „Üben“ rechts neben der Fiche.</p>')}
+          ${step(4, 'Zum Abschluss', '<p>Eine Runde <a href="#/jeu/express">Redewendungs-Express</a> (etwa 3 Minuten).</p>')}
           <p class="guide-note">Drei Aktivitäten pro Tag erfüllen das Tagesziel auf der Startseite.</p></section>
         <section class="panel guide-box"><h2>3. Ein empfohlener Weg</h2>
           <p>Wenn du alles von vorn durcharbeiten willst, folge den Themen in dieser Reihenfolge. Jede Fiche hat unten die Knöpfe „Vorherige“ und „Nächste“.</p>
@@ -487,18 +494,27 @@
             <li>Unterstrichene Wörter führen zu verwandten Themen; fahre darüber für eine Vorschau.</li>
             <li>Rechts: passende Übungen, die Karte der Nachbarn, die Fiches, auf die verwiesen wird, und die, die auf diese Fiche verweisen.</li>
             <li>Oben: zu Favoriten hinzufügen, als gelesen markieren, eine eigene Notiz schreiben.</li>
-            <li>Unter dem deutschen Titel steht der französische Originaltitel, die Beispiele sind immer Französisch.</li>
+            <li>Unter dem deutschen Titel steht der französische Originaltitel; die Beispiele sind immer auf Französisch.</li>
           </ul></section>
         <section class="panel guide-box"><h2>5. Eine Übung machen</h2>
           <ul>
             <li>Fülle die Lücken aus und klicke auf <b>Prüfen</b> (Strg Enter). <b>Enter</b> springt zur nächsten Lücke.</li>
-            <li><b>Tipp</b> zeigt den nächsten Buchstaben; nach zwei Fehlern zeigt <b>zeigen</b> die Lösung einer einzelnen Lücke. Jede Hilfe kostet Punkte.</li>
+            <li><b>Tipp</b> zeigt den nächsten Buchstaben. Nach zwei Fehlern blendet der Knopf <b>zeigen</b> die Lösung dieser einen Lücke ein. Jede Hilfe kostet Punkte.</li>
             <li>Die Hilfe-Fiche öffnet sich neben der Übung. Die Akzentleiste (é, è, ç, œ …) erscheint beim Tippen.</li>
             <li>Alles Verpasste kommt in „Wiederholen“.</li>
           </ul></section>
-        <section class="panel guide-box"><h2>6. Den Fortschritt verfolgen</h2>
+        <section class="panel guide-box"><h2>6. Spielen</h2>
+          <ul>
+            <li><a href="#/jeu/express"><b>Redewendungs-Express</b></a>: französische Redewendungen in vier Spielarten, mit Lernkarten und Aussprache.</li>
+            <li><a href="#/jeu/defi"><b>Tagesquiz</b></a>: zehn Fragen aus dem ganzen Programm, jeden Tag neu.</li>
+            <li><a href="#/jeu/sprint"><b>Wettlauf gegen die Zeit</b></a>: 60 Sekunden, ein Satz nach dem anderen; wähle ein Thema oder das ganze Programm.</li>
+            <li><a href="#/jeu/memo"><b>Redewendungs-Memo</b></a>: Anfang und Ende einer Redewendung finden.</li>
+            <li><a href="#/jeu/chemin"><b>Regelpfad</b></a>: zwei Regeln über ihre Querverweise verbinden.</li>
+            <li>Alles, was du in Spielen verpasst, landet in <a href="#/revision">Wiederholen</a>.</li>
+          </ul></section>
+        <section class="panel guide-box"><h2>7. Den Fortschritt verfolgen</h2>
           <p><a href="#/progres">Mein Fortschritt</a> zeigt gelesene Fiches, Ergebnisse, den Aktivitätskalender, Favoriten und Notizen. Dort kannst du eine Sicherung kopieren, die Schriftgröße, Hell/Dunkel und die Sprache einstellen.</p></section>
-      </div>`);
+      </div>`));
   };
 
   V.notfound = function () {

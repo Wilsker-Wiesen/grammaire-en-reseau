@@ -47,6 +47,18 @@ TYPOS = [
     ('Ça, çà , sa', 'Ça, çà, sa'),
     ('Ca ne casse pas', 'Ça ne casse pas'),
     ('Etre un ours', 'Être un ours'),
+    # vom Lektorat gemeldet (24.10.2026), nur eindeutige Fälle
+    ('infinirif', 'infinitif'), ('surpendre', 'surprendre'), ("s'épendre", "s'éprendre"), ('toutes le autres', 'toutes les autres'),
+    ("Comment l'écrire ??", "Comment l'écrire ?"), ('j assoirai', "j'assoirai"), ("tu' assoiras", 'tu assoiras'), ('ilassiéra', 'il assiéra'),
+    ('Un description', 'Une description'), ('Plusiers sujets', 'Plusieurs sujets'), ('une propositions subordonnée', 'une proposition subordonnée'),
+    ('1er personne', '1re personne'), ('ses capacité ', 'ses capacités '), ("'ou de forme impersonnelle)", '(ou de forme impersonnelle)'),
+    ('bon nombres', 'bon nombre'), ('seule certaines', 'seules certaines'), (' un personne', ' une personne'), ('choses personnifiés', 'choses personnifiées'),
+    ("puisque qu'à l'oral", "puisqu'à l'oral"), ("il n'y qu'une", "il n'y a qu'une"), ("ne se s'accorde", "ne s'accorde"), ("c'est-à -dire", "c'est-à-dire"),
+    ('énormement', 'énormément'), ('ayiez', 'ayez'), ("D'un point de vue étymologie", "D'un point de vue étymologique"), ('Les chient aboient', 'Les chiens aboient'),
+    ("J'ai ouïe dire", "J'ai ouï dire"), ('ayanr béé', 'ayant béé'), ('bruire les les feuilles', 'bruire les feuilles'), ('condamnéà', 'condamné à'), ('au quel', 'auquel'),
+    ('Ne pas confondez pas', 'Ne confondez pas'), ('Dyonisos', 'Dionysos'), ("trait de d'union", "trait d'union"),
+    ("Qu'est-ce vous voulez boire", "Qu'est-ce que vous voulez boire"), ("qu'est que ?", "qu'est-ce que ?"), ('il il fallait', 'il fallait'),
+    ("après qu'il eurent parlé", "après qu'ils eurent parlé"), ('être du loin du compte', 'être loin du compte'), ('se rendre de compte de', 'se rendre compte de'),
     ('). le subjonctif est essentiellement', '). Le subjonctif est essentiellement'),
     ('Participe passé précédé de "en "', 'Participe passé précédé de "en"'),
 ]
@@ -114,7 +126,9 @@ def main():
         for key in ('title', 'subtitle', 'instructions', 'body', 'reading'):
             if e.get(key): e[key] = fix_text(e[key])
         for h_ in e.get('help', []): h_['label'] = fix_title(h_['label'])
-        if e.get('pairs'): e['pairs'] = [[fix_text(a), fix_text(b)] for a, b in e['pairs']]
+        if e.get('pairs'):
+            oe = lambda t: re.sub(r'\b(c|s|v|b|m)oe(u)', r'\1œ\2', t).replace('oeufs', 'œufs').replace('oeil', 'œil')
+            e['pairs'] = [[oe(fix_text(a)), oe(fix_text(b))] for a, b in e['pairs']]
     for (eid, gi), (bad, good) in ANSWER_FIX.items():
         g = exercises[eid]['gaps'][gi]
         if bad in g['a']:
@@ -321,7 +335,7 @@ def main():
 
     # significations des locutions (tableaux des pages « explications ») : clé = expression sans ponctuation
     meanings = {}
-    lkey = lambda t: re.sub(r'[^a-z]', '', sortkey(t))
+    lkey = lambda t: re.sub(r'[^a-z]', '', sortkey(t.replace('œ', 'oe').replace('Œ', 'Oe')))
     for n in (1, 2, 3):
         r = rules.get(f'locutions{n}-explications')
         if not r: continue

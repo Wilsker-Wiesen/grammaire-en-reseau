@@ -15,6 +15,8 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from check_de import tags  # noqa: E402
 
+from build import TYPOS  # noqa: E402
+
 MOJIBAKE = {'à' + ch: chr(ord(ch.encode('cp1252')) + 0x40) for ch in '§¹Š»¢€«ˆ'}
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -48,10 +50,14 @@ def main():
         for a, b in MOJIBAKE.items():
             html = html.replace(a, b)
         html = html.replace('dans répétée. mon café', 'dans mon café')
+        for a, b in TYPOS:  # dieselben Korrekturen in den französischen Beispielen der deutschen Fassung
+            html = html.replace(a, b)
         title = t['title'].strip()
         # Verbseiten heißen in beiden Sprachen nach dem französischen Infinitiv
         if not title or title.startswith(('Inhalt', 'Sommaire', 'Register')) or rid.startswith('verbe-') or rid == 'finir':
             title = r['title']  # Fehltitel des Originals : korrigierter (französischer) Titel
+        title = title.replace('Übersicht (Tabelle)', 'Übersicht')
+        html = html.replace('Übersicht (Tabelle)', 'Übersicht')
         rules[rid] = {'title': title, 'html': html}
         ok += 1
     strings = {}
@@ -64,7 +70,7 @@ def main():
         strings[k] = v
     # deutsche Bedeutungen der Redewendungen : Tabellenzeilen der übersetzten Erklärseiten, Zeile für Zeile neben der französischen
     import unicodedata
-    lkey = lambda t: re.sub(r'[^a-z]', '', unicodedata.normalize('NFKD', t.lower()).encode('ascii', 'ignore').decode())
+    lkey = lambda t: re.sub(r'[^a-z]', '', unicodedata.normalize('NFKD', t.lower().replace('œ', 'oe')).encode('ascii', 'ignore').decode())
     plain = lambda h: re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', h.replace('<br/>', ' / '))).strip()
     meanings = {}
     for n in (1, 2):
