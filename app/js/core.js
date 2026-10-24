@@ -45,6 +45,7 @@
     quote: '<svg viewBox="0 0 24 24"><path d="M7 8h4v4c0 3-2 5-4 5M14 8h4v4c0 3-2 5-4 5"/></svg>',
     search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>',
     back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+    sound: '<svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
   };
   G.ICON = ICON;
 
@@ -66,7 +67,7 @@
 
   // ------------------------------------------------------------------ stockage (local + base privée de l'artefact)
   const LS_KEY = 'grammaire-en-reseau-v1';
-  const blank = () => ({ v: 1, ex: {}, read: {}, fav: {}, notes: {}, review: {}, hist: [], days: {}, games: {}, prefs: {} });
+  const blank = () => ({ v: 1, ex: {}, read: {}, fav: {}, notes: {}, review: {}, hist: [], days: {}, games: {}, prefs: {}, loc: {} });
   const S = (G.S = {
     data: blank(), remote: null, uid: null, synced: false, listeners: [],
     load() {
@@ -124,6 +125,7 @@
       out.ex[k] = !w ? v : { ...w, ...v, best: Math.max(w.best || 0, v.best || 0), tries: Math.max(w.tries || 0, v.tries || 0), ts: Math.max(w.ts || 0, v.ts || 0) };
     }
     out.review = Object.assign({}, b.review, a.review);
+    out.loc = Object.assign({}, b.loc, a.loc);
     out.days = Object.assign({}, b.days);
     for (const [d, n] of Object.entries(a.days || {})) out.days[d] = Math.max(out.days[d] || 0, n);
     out.games = Object.assign({}, b.games);

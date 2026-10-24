@@ -42,7 +42,7 @@
         <li><b>Revenez chaque jour</b> : défi du jour, puis « À revoir », où vos erreurs reviennent au bon moment.</li></ol>`,
         `<ol><li><b>Lies eine Fiche</b> aus einem Thema oder dem Register. Unterstrichene Wörter führen zu verwandten Themen.</li>
         <li><b>Übe</b>: Zu jeder Fiche gibt es passende Übungen; in einer Übung öffnet sich die Hilfe-Fiche daneben.</li>
-        <li><b>Komm jeden Tag wieder</b>: erst die Tagesaufgabe, dann „Wiederholen“, wo deine Fehler zur richtigen Zeit zurückkommen.</li></ol>`)}</div>
+        <li><b>Komm jeden Tag wieder</b>: erst das Tagesquiz, dann „Wiederholen“, wo deine Fehler zur richtigen Zeit zurückkommen.</li></ol>`)}</div>
         <div class="welcome-act"><a class="btn primary" href="#/guide">Mode d’emploi</a><a class="btn" href="#/themes">Voir le plan</a><a class="btn" href="#/jeu/defi">Faire le défi du jour</a><button class="btn ghost" id="wclose">Masquer</button></div></section>` : ''}
       <section class="daily" aria-label="Aujourd’hui">
         <div class="daily-goal"><span class="ring ${acts >= GOAL ? 'ok' : ''}" style="--p:${Math.min(100, (acts / GOAL) * 100)}" data-v="${Math.min(acts, GOAL)}/${GOAL}"></span>
@@ -57,7 +57,7 @@
       <section class="hero" style="margin-top:18px">
         <canvas id="hero-net" aria-hidden="true"></canvas>
         <div class="eyebrow">Grammaire française · Jan Wilsker-Wiesen</div>
-        <h1>${G.T('La grammaire française, <em>en réseau.</em>', 'Französische Grammatik, <em>vernetzt.</em>')}</h1>
+        <h1>${G.T('La grammaire française, <em>en réseau.</em>', 'Französische Grammatik <em>im Netz der Regeln.</em>')}</h1>
         <p>${G.T("Chaque règle renvoie aux notions qu'elle suppose et aux exercices qui l'entraînent. Lisez, cliquez, vérifiez, revenez.", 'Jede Regel verweist auf die Begriffe, die sie voraussetzt, und auf die Übungen, die sie trainieren. Lesen, klicken, prüfen, wiederkommen.')}</p>
         <button class="hero-search" id="hero-search">${ICON.search}<span>${G.T('Chercher : quoique, leur, accord du participe…', 'Suchen: quoique, leur, Angleichung …')}</span><kbd>Ctrl K</kbd></button>
         <div class="hero-stats">
@@ -472,10 +472,10 @@
             <a class="card" href="#/themes"><h3>${ICON.rule} Die Gliederung</h3><p>Das Inhaltsverzeichnis: fünf große Themen in nummerierten Abschnitten. Zum Lernen in der richtigen Reihenfolge.</p></a>
             <a class="card" href="#/sommaire"><h3>${ICON.cards} Das Register A–Z</h3><p>Das alphabetische Verzeichnis nach französischen Fachbegriffen („accord“, „participe“, „que“ …), mit deutscher Übersetzung. Für eine gezielte Frage.</p></a>
             <button class="card" type="button" data-search><h3>${ICON.search} Die Suche</h3><p>Strg K oder die Lupe: ein Wort, eine Wendung, eine Regel, auf Deutsch oder Französisch. Akzente sind nicht nötig.</p></button>
-            <a class="card" href="#/carte"><h3>${ICON.map} Die Karte</h3><p>Alle Fiches und ihre Verweise auf einer Karte. So siehst du, welche Themen zusammengehören.</p></a>
+            <a class="card" href="#/carte"><h3>${ICON.map} Das Regelnetz</h3><p>Alle Regeln und ihre Querverweise auf einer Karte. So siehst du, welche Themen zusammengehören.</p></a>
           </div></section>
         <section class="panel guide-box"><h2>2. Eine typische Sitzung (15 Minuten)</h2>
-          ${step(1, 'Die Tagesaufgabe', '<p>Zehn Fragen, ohne Zeitdruck. <a href="#/jeu/defi">Tagesaufgabe starten</a></p>')}
+          ${step(1, 'Das Tagesquiz', '<p>Zehn Fragen, ohne Zeitdruck. <a href="#/jeu/defi">Tagesquiz starten</a></p>')}
           ${step(2, 'Wiederholen', '<p>Fehler der letzten Tage kommen zur richtigen Zeit zurück. <a href="#/revision">Wiederholung öffnen</a></p>')}
           ${step(3, 'Ein neues Thema', '<p>Lies eine Fiche und mach dann eine Übung aus der Spalte „Üben“ rechts neben der Fiche.</p>')}
           <p class="guide-note">Drei Aktivitäten pro Tag erfüllen das Tagesziel auf der Startseite.</p></section>

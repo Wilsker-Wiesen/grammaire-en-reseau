@@ -3,6 +3,7 @@
 Usage : .venv/bin/python tools/build.py   (après tools/extract.py) ; écrit app/data.js et app/assets/
 """
 import os, re, json, shutil, hashlib, collections, unicodedata
+from html import escape as html_esc
 import numpy as np
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -328,6 +329,17 @@ def main():
             cells = re.findall(r'<td[^>]*>(.*?)</td>', row, re.S)
             if len(cells) >= 3 and '«' in cells[1]:
                 meanings[lkey(plain(cells[1]))] = plain(cells[2].replace('<br/>', ' / '))
+    # ergänzte Bedeutungen (Locutions 3 : die Erklärseite des Quellmaterials war eine Kopie von Teil 2)
+    extra = {k: v for k, v in json.load(open(os.path.join(ROOT, 'tools', 'locutions_sens.json'))).items() if not k.startswith('_')}
+    for expr, v in extra.items():
+        meanings[lkey(expr)] = v['fr']
+    if 'locutions3-explications' in rules:
+        rows = ''.join(f'<tr><td><p class="center">{i}</p></td><td>« {html_esc(expr)} »</td><td>{html_esc(v["fr"])} <a href="{v["src"]}">source</a></td></tr>'
+                       for i, (expr, v) in enumerate(extra.items(), 41))
+        rules['locutions3-explications']['html'] = ('<p><a href="#/exercice/locutions3">locutions3.htm</a></p><div class="box t-blue"><p>Significations ajoutées : '
+            'la page d’origine reprenait par erreur les locutions de la série 2.</p></div><table class="tbl"><tr><td class="t-orange" colspan="2"><p class="center">Expressions, locutions</p></td>'
+            '<td class="t-orange"><p class="center">Significations</p></td></tr>' + rows + '</table>')
+        rules['locutions3-explications']['added'] = True
     found = sum(1 for e in exercises.values() for a, b in e.get('pairs', []) if lkey(a + ' ' + b) in meanings)
     print(f'significations : {len(meanings)} (dont {found} reliées aux paires) ; ', end='')
 

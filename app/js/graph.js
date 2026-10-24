@@ -104,7 +104,7 @@
   // ------------------------------------------------------------------ carte complète
   G.views.carte = function (rt) {
     const focusId = rt.q.get('f');
-    const el = h(`<div class="page" style="max-width:none"><div class="page-head" style="max-width:none;margin-bottom:16px"><div class="eyebrow">${G.T('Réseau', 'Netz')}</div><h1>${G.T('Carte des notions', 'Begriffskarte')}</h1>
+    const el = h(`<div class="page" style="max-width:none"><div class="page-head" style="max-width:none;margin-bottom:16px"><div class="eyebrow">${G.T('Réseau', 'Netz')}</div><h1>${G.T('Carte des notions', 'Regelnetz')}</h1>
       <p class="lead">${G.T(`${plural(N.length, 'fiche')} et ${plural(D.graph.edges.length, 'renvoi')}. Les fiches proches se citent souvent ; la taille d’un point dit combien de fiches y renvoient. Faites glisser pour vous déplacer, molette ou pincement pour zoomer.`, `${plural(N.length, 'fiche')} und ${plural(D.graph.edges.length, 'renvoi')}. Fiches, die nah beieinander liegen, verweisen oft aufeinander; die Größe eines Punktes zeigt, wie viele Fiches auf ihn verweisen. Ziehen zum Verschieben, Mausrad oder zwei Finger zum Zoomen.`)}</p></div>
       <div class="map-wrap" id="mw"><canvas id="map" aria-label="Carte interactive des fiches de grammaire"></canvas>
         <div class="map-tools"><label class="filter">${ICON.search}<input id="mq" type="search" placeholder="Trouver une fiche sur la carte…" autocomplete="off"></label>

@@ -62,7 +62,29 @@ def main():
         for a, b in UI_TERMS:
             v = v.replace(a, b)
         strings[k] = v
-    js = 'window.GRAMMAIRE_DE=' + json.dumps({'rules': rules, 'str': strings}, ensure_ascii=False, separators=(',', ':')) + ';\n'
+    # deutsche Bedeutungen der Redewendungen : Tabellenzeilen der übersetzten Erklärseiten, Zeile für Zeile neben der französischen
+    import unicodedata
+    lkey = lambda t: re.sub(r'[^a-z]', '', unicodedata.normalize('NFKD', t.lower()).encode('ascii', 'ignore').decode())
+    plain = lambda h: re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', h.replace('<br/>', ' / '))).strip()
+    meanings = {}
+    for n in (1, 2):
+        rid = f'locutions{n}-explications'
+        if rid not in rules: continue
+        fr_rows = re.findall(r'<tr>(.*?)</tr>', data['rules'][rid]['html'], re.S)
+        de_rows = re.findall(r'<tr>(.*?)</tr>', rules[rid]['html'], re.S)
+        for fr, de in zip(fr_rows, de_rows):
+            fc, dc = re.findall(r'<td[^>]*>(.*?)</td>', fr, re.S), re.findall(r'<td[^>]*>(.*?)</td>', de, re.S)
+            if len(fc) >= 3 and '«' in fc[1] and len(dc) >= 3:
+                meanings[lkey(plain(fc[1]))] = plain(dc[2])
+    extra = {k: v for k, v in json.load(open(os.path.join(ROOT, 'tools', 'locutions_sens.json'))).items() if not k.startswith('_')}
+    for expr, v in extra.items():
+        meanings[lkey(expr)] = v['de']
+    if 'locutions3-explications' in data['rules']:
+        from html import escape
+        rows = ''.join(f'<tr><td><p class="center">{i}</p></td><td>« {escape(expr)} »</td><td>{escape(v["de"])} <a href="{v["src"]}">Quelle</a></td></tr>'
+                       for i, (expr, v) in enumerate(extra.items(), 41))
+        rules['locutions3-explications'] = {'title': 'Bedeutung der Wendungen 3', 'html': '<p><a href="#/exercice/locutions3">locutions3.htm</a></p><div class="box t-blue"><p>Ergänzte Bedeutungen: Die ursprüngliche Seite enthielt versehentlich die Wendungen aus Teil 2.</p></div><table class="tbl"><tr><td class="t-orange" colspan="2"><p class="center">Wendungen</p></td><td class="t-orange"><p class="center">Bedeutung</p></td></tr>' + rows + '</table>'}
+    js = 'window.GRAMMAIRE_DE=' + json.dumps({'rules': rules, 'str': strings, 'meanings': meanings}, ensure_ascii=False, separators=(',', ':')) + ';\n'
     open(os.path.join(ROOT, 'app', 'data_de.js'), 'w').write(js)
     print(f'data_de.js : {ok} Fiches übernommen, {len(bad)} wegen Strukturabweichung ausgelassen, {len(missing)} fehlen ; {len(strings)} Bezeichnungen ; {len(js) / 1e6:.2f} MB')
     if bad:

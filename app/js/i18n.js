@@ -5,7 +5,10 @@
 
   G.lang = 'de';
   /** Text je nach Sprache : T('français', 'Deutsch'). */
-  G.T = (fr, de) => (G.lang === 'de' ? de : fr);
+  // deutsche Benennung : „Regel“ statt des französischen „Fiche“ (nur Großschreibung, damit CSS-Klassen unberührt bleiben)
+  const deFix = (s) => (typeof s === 'string' ? s.replace(/Regelfiches/g, 'Regeln').replace(/Hilfe-Fiche/g, 'Hilfe-Regel').replace(/\bFiches\b/g, 'Regeln').replace(/\bFiche\b/g, 'Regel') : s);
+  G.deFix = deFix;
+  G.T = (fr, de) => (G.lang === 'de' ? deFix(de) : fr);
 
   // ------------------------------------------------------------------ Mengenangaben (plural)
   const NOUNS = {
@@ -17,7 +20,7 @@
     'item acquis': ['Aufgabe sicher gelernt', 'Aufgaben sicher gelernt'],
   };
   G.plural = function (n, s, p) {
-    if (G.lang === 'de' && NOUNS[s]) return `${G.fmt(n)} ${NOUNS[s][n === 1 ? 0 : 1]}`;
+    if (G.lang === 'de' && NOUNS[s]) return `${G.fmt(n)} ${deFix(NOUNS[s][n === 1 ? 0 : 1])}`;
     return `${G.fmt(n)} ${n > 1 ? (p || s + 's') : s}`;
   };
 
@@ -42,7 +45,7 @@
     'Grammaire en réseau': 'Grammaire en réseau', 'en réseau': 'en réseau',
     'Rechercher une règle, un mot, un exercice…': 'Regel, Wort oder Übung suchen …',
     'Accueil': 'Start', 'Thèmes': 'Themen', 'Sommaire A–Z': 'Register A–Z', 'Exercices': 'Übungen', 'Jeux & défis': 'Spiele', 'Jeux': 'Spiele',
-    'À revoir': 'Wiederholen', 'Carte des notions': 'Begriffskarte', 'Ma progression': 'Mein Fortschritt', 'Mode d’emploi': 'Anleitung', 'À propos': 'Über das Programm',
+    'À revoir': 'Wiederholen', 'Carte des notions': 'Regelnetz', 'Ma progression': 'Mein Fortschritt', 'Mode d’emploi': 'Anleitung', 'À propos': 'Über das Programm',
     'Chargement du programme…': 'Programm wird geladen …', 'Ouvrir le menu': 'Menü öffnen', 'Changer de thème': 'Hell/Dunkel wechseln', 'Thème clair / sombre': 'Hell / Dunkel',
     'Navigation principale': 'Hauptnavigation', 'Fiche ouverte à côté': 'Fiche in der Seitenleiste', 'Retour': 'Zurück', 'Retour (Alt ←)': 'Zurück (Alt ←)', 'Rechercher (Ctrl+K)': 'Suchen (Strg+K)',
     'subjonctif, accord du participe, quoique…': 'subjonctif, Angleichung, quoique …', 'Échap': 'Esc', 'Ctrl K': 'Strg K', 'Ctrl Entrée': 'Strg Enter', 'Entrée': 'Enter', 'Maj': 'Umschalt',
@@ -52,8 +55,8 @@
     'Sommaire': 'Register', 'Thème': 'Thema', 'Système': 'System', 'Clair': 'Hell', 'Sombre': 'Dunkel', 'Petite': 'Klein', 'Normale': 'Normal', 'Grande': 'Groß',
     // fiche
     'Ajouter aux favoris': 'Zu Favoriten', 'Favori': 'Favorit', 'Note': 'Notiz', 'Marquer comme lue': 'Als gelesen markieren', 'Lue': 'Gelesen',
-    '← Précédente': '← Vorherige', 'Suivante →': 'Nächste →', 'Ma note': 'Meine Notiz', "S'entraîner": 'Üben', 'S’entraîner': 'Üben', 'Réseau': 'Netz',
-    'Renvoie à': 'Verweist auf', 'Citée par': 'Zitiert von', 'Fiches apparentées': 'Verwandte Fiches', 'Aucun.': 'Keine.',
+    '← Précédente': '← Vorherige', 'Suivante →': 'Nächste →', 'Ma note': 'Meine Notiz', "S'entraîner": 'Üben', 'S’entraîner': 'Üben', 'Réseau': 'Vernetzung',
+    'Renvoie à': 'Verweist auf', 'Citée par': 'Zitiert von', 'Fiches apparentées': 'Verwandte Regeln', 'Aucun.': 'Keine.',
     'Même sujet, traité ailleurs dans le programme.': 'Gleiches Thema, an anderer Stelle behandelt.',
     'Aucun exercice ne renvoie à cette fiche.': 'Zu dieser Fiche gibt es keine eigene Übung.', 'Par les fiches voisines :': 'Über verwandte Fiches:',
     'Vos remarques, exemples, questions…': 'Deine Anmerkungen, Beispiele, Fragen …', 'Voir sur la carte': 'Auf der Karte zeigen',
@@ -65,12 +68,12 @@
     'Filtrer : participe, que, accord…': 'Filtern: participe, que, accord …', 'Sommaire ({x})': 'Register ({x})', 'Toutes les fiches ({x})': 'Alle Fiches ({x})',
     'Thèmes': 'Themen', 'Le plan de la grammaire': 'Gliederung der Grammatik', 'Introduction →': 'Einführung →', 'Lire l’introduction du thème': 'Einführung zum Thema lesen',
     // accueil
-    'Bienvenue': 'Willkommen', 'Par où commencer ?': 'Wo fange ich an?', 'Voir le plan': 'Gliederung ansehen', 'Faire le défi du jour': 'Tagesaufgabe machen', 'Masquer': 'Ausblenden',
+    'Bienvenue': 'Willkommen', 'Par où commencer ?': 'Wo fange ich an?', 'Voir le plan': 'Gliederung ansehen', 'Faire le défi du jour': 'Tagesquiz starten', 'Masquer': 'Ausblenden',
     'Objectif du jour': 'Tagesziel', 'Objectif du jour atteint': 'Tagesziel erreicht', 'Bravo. Tout le reste est du bonus.': 'Super. Alles Weitere ist Bonus.',
-    '{x} activités : exercice, défi, révision ou jeu': '{x} Aktivitäten: Übung, Tagesaufgabe, Wiederholung oder Spiel',
+    '{x} activités : exercice, défi, révision ou jeu': '{x} Aktivitäten: Übung, Tagesquiz, Wiederholung oder Spiel',
     'jours de suite': 'Tage in Folge', 'jour de suite': 'Tag in Folge', 'jours de suite · en jeu aujourd’hui': 'Tage in Folge · heute noch offen', 'jour de suite · en jeu aujourd’hui': 'Tag in Folge · heute noch offen',
     'Reprendre': 'Weitermachen', 'Pour commencer': 'Zum Einstieg', "À revoir aujourd'hui": 'Heute wiederholen', 'Rien en attente': 'Nichts offen',
-    'Défi du jour': 'Tagesaufgabe', '10 questions, à faire': '10 Fragen, noch offen', 'Fait : {x}': 'Erledigt: {x}',
+    'Défi du jour': 'Tagesquiz', '10 questions, à faire': '10 Fragen, noch offen', 'Fait : {x}': 'Erledigt: {x}',
     'Grammaire française · Jan Wilsker-Wiesen': 'Französische Grammatik · Jan Wilsker-Wiesen',
     'fiches de règles': 'Regelfiches', 'exercices': 'Übungen', 'items à résoudre': 'Aufgaben', 'renvois entre textes': 'Verweise zwischen Texten',
     'Les grands thèmes': 'Die großen Themen', 'Tout le plan →': 'Ganze Gliederung →', 'Sommaire alphabétique': 'Alphabetisches Register',
@@ -104,7 +107,7 @@
     'Notion': 'Thema', 'Commencer': 'Starten', 'Arrêter': 'Beenden', 'Points': 'Punkte', 'Série': 'Serie', 'Record ici : {x}': 'Rekord hier: {x}', 'Pas encore de record ici': 'Hier noch kein Rekord',
     'Tout le programme ({x} phrases)': 'Alles ({x} Sätze)',
     'Partie arrêtée': 'Spiel beendet', 'Nouveau record !': 'Neuer Rekord!', 'Temps écoulé': 'Zeit abgelaufen', 'Série de {x} : +1 bonus': 'Serie von {x}: +1 Bonus',
-    'Question': 'Frage', 'Justes': 'Richtig', 'Relever le défi': 'Tagesaufgabe starten', 'S’entraîner sur ce défi': 'Mit dieser Aufgabe üben',
+    'Question': 'Frage', 'Justes': 'Richtig', 'Relever le défi': 'Tagesquiz starten', 'S’entraîner sur ce défi': 'Dieses Quiz zum Üben wiederholen',
     'Paires': 'Paare', 'Coups': 'Züge', 'coups': 'Züge', 'début': 'Anfang', 'fin': 'Ende', 'Locution': 'Wendung', 'Trouver la fin': 'Ende finden', 'Trouver le début': 'Anfang finden',
     'Quel est le début de cette expression ?': 'Wie beginnt diese Wendung?', 'Comment se termine cette expression ?': 'Wie endet diese Wendung?',
     'Signification non donnée dans le programme.': 'Bedeutung im Programm nicht angegeben.', 'Aucune erreur.': 'Kein Fehler.',
@@ -114,11 +117,11 @@
     'Restants': 'Übrig', 'Séance terminée': 'Sitzung beendet', 'Retour à l’accueil': 'Zur Startseite', "Retour à l'accueil": 'Zur Startseite',
     'Rien à revoir aujourd’hui.': 'Heute ist nichts zu wiederholen.', 'Votre pile de révision est vide.': 'Dein Wiederholungsstapel ist leer.',
     'Faites quelques exercices : les lacunes manquées viendront s’y ranger.': 'Mach ein paar Übungen: Verpasste Lücken landen hier.',
-    'Une course contre la montre ?': 'Wie wär’s mit einem Zeitrennen?', 'Ouvrir l’exercice': 'Übung öffnen', 'C’est fait, je l’ai réussie': 'Erledigt, ich habe sie geschafft', 'Pas encore': 'Noch nicht',
+    'Une course contre la montre ?': 'Wie wär’s mit einem Wettlauf gegen die Zeit?', 'Ouvrir l’exercice': 'Übung öffnen', 'C’est fait, je l’ai réussie': 'Erledigt, ich habe sie geschafft', 'Pas encore': 'Noch nicht',
     'Encore {x}': 'Noch {x}',
     // carte
     'Trouver une fiche sur la carte…': 'Fiche auf der Karte finden …', 'Mes lectures': 'Gelesenes', 'Recentrer': 'Zentrieren', 'Mettre en évidence les fiches lues': 'Gelesene Fiches hervorheben',
-    'Fiches du sommaire': 'Fiches aus dem Register', 'Lire la fiche': 'Fiche lesen', 'À côté': 'Daneben', 'Voisins ({x})': 'Nachbarn ({x})', 'Carte interactive des fiches de grammaire': 'Interaktive Karte der Grammatik-Fiches',
+    'Fiches du sommaire': 'Regeln aus dem Register', 'Lire la fiche': 'Fiche lesen', 'À côté': 'Daneben', 'Voisins ({x})': 'Nachbarn ({x})', 'Carte interactive des fiches de grammaire': 'Interaktives Netz der Grammatikregeln',
     // progression
     'Tableau de bord': 'Übersicht', 'Fiches lues': 'Gelesene Fiches', 'Exercices faits': 'Erledigte Übungen', 'Score moyen': 'Durchschnitt', 'meilleurs scores': 'Bestwerte',
     'Série en cours': 'Aktuelle Serie', 'Activité': 'Aktivität', 'Exercices par collection': 'Übungen nach Sammlung', 'Lecture par thème': 'Lesen nach Thema',
@@ -152,8 +155,8 @@
   function tr(s) {
     const t = s.replace(/\s+/g, ' ').trim();
     if (!t) return null;
-    if (PLAIN[t] != null) return PLAIN[t];
-    for (const [re, v] of PATTERNS) { const m = re.exec(t); if (m) return v.replace('{x}', m[1]).replace('{y}', m[2] || ''); }
+    if (PLAIN[t] != null) return deFix(PLAIN[t]);
+    for (const [re, v] of PATTERNS) { const m = re.exec(t); if (m) return deFix(v).replace('{x}', m[1]).replace('{y}', m[2] || ''); }
     return null;
   }
   G.tr = (s) => (G.lang === 'de' ? tr(s) || s : s);

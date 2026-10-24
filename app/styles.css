@@ -653,3 +653,24 @@ textarea.io { width: 100%; min-height: 120px; font: 12px/1.4 var(--f-mono); padd
 .az-de { display: block; font: 400 13px/1.35 var(--f-ui); color: var(--muted); margin-top: 2px; }
 .az-de.inline { display: inline; margin-left: 6px; }
 .az-de.inline::before { content: "· "; }
+
+/* Redewendung express */
+.dim { color: var(--muted); }
+.loc-q { font: 400 clamp(22px, 3vw, 28px)/1.35 var(--f-read); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.loc-q.is-meaning { font-size: clamp(18px, 2.2vw, 22px); }
+.loc-opts { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; }
+.loc-opts.long { grid-template-columns: 1fr; }
+.loc-opts .qopt { display: flex; gap: 10px; align-items: flex-start; font-family: var(--f-read); font-size: 16px; }
+.loc-opts .key { flex: none; width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font: 600 11px/1 var(--f-mono); background: var(--surface-2); color: var(--muted); margin-top: 1px; }
+.icon-btn.speak { width: 34px; height: 34px; color: var(--accent); }
+.loc-progress { display: flex; align-items: center; gap: 14px; }
+.loc-progress .ring { width: 54px; height: 54px; }
+.loc-progress .ring::after { width: 44px; height: 44px; font-size: 13px; }
+.seg-wrap { flex-wrap: wrap; }
+.loc-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-l); background: var(--surface); overflow: hidden; }
+.loc-item { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; }
+.loc-item:first-child { border-top: 0; }
+.loc-item.ok { box-shadow: inset 3px 0 0 var(--ok); }
+.loc-expr { font: 400 17px/1.4 var(--f-read); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.loc-expr b { font-weight: 600; color: var(--accent); }
+.loc-mean { font-size: 14.5px; color: var(--ink-2); line-height: 1.45; }
