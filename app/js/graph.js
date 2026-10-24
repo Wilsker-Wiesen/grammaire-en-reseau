@@ -92,7 +92,7 @@
       if (hover >= 0) { const n = neigh[hover]; label(G.ruleTitle(n.id), n.x, n.y + (n.y > cy ? 20 : -12), ink, true); }
       else label(r.title, cx, cy + 30, ink, true);
       ctx.font = `500 10px ${css('--f-mono')}`; ctx.fillStyle = muted;
-      ctx.fillText('— renvoie à   ┄ citée par', 8, H - 8);
+      ctx.fillText(G.T('— renvoie à   ┄ citée par', '— verweist auf   ┄ zitiert von'), 8, H - 8);
     };
     draw();
     const hit = (ev) => { const b = c.getBoundingClientRect(); const x = ev.clientX - b.left, y = ev.clientY - b.top; let best = -1, bd = 18 * 18; neigh.forEach((n, i) => { const d = (n.x - x) ** 2 + (n.y - y) ** 2; if (d < bd) { bd = d; best = i; } }); return best; };
@@ -104,12 +104,12 @@
   // ------------------------------------------------------------------ carte complète
   G.views.carte = function (rt) {
     const focusId = rt.q.get('f');
-    const el = h(`<div class="page" style="max-width:none"><div class="page-head" style="max-width:none;margin-bottom:16px"><div class="eyebrow">Réseau</div><h1>Carte des notions</h1>
-      <p class="lead">${plural(N.length, 'fiche')} et ${plural(D.graph.edges.length, 'renvoi')}. Les fiches proches se citent souvent ; la taille d’un point dit combien de fiches y renvoient. Faites glisser pour vous déplacer, molette ou pincement pour zoomer.</p></div>
+    const el = h(`<div class="page" style="max-width:none"><div class="page-head" style="max-width:none;margin-bottom:16px"><div class="eyebrow">${G.T('Réseau', 'Netz')}</div><h1>${G.T('Carte des notions', 'Begriffskarte')}</h1>
+      <p class="lead">${G.T(`${plural(N.length, 'fiche')} et ${plural(D.graph.edges.length, 'renvoi')}. Les fiches proches se citent souvent ; la taille d’un point dit combien de fiches y renvoient. Faites glisser pour vous déplacer, molette ou pincement pour zoomer.`, `${plural(N.length, 'fiche')} und ${plural(D.graph.edges.length, 'renvoi')}. Fiches, die nah beieinander liegen, verweisen oft aufeinander; die Größe eines Punktes zeigt, wie viele Fiches auf ihn verweisen. Ziehen zum Verschieben, Mausrad oder zwei Finger zum Zoomen.`)}</p></div>
       <div class="map-wrap" id="mw"><canvas id="map" aria-label="Carte interactive des fiches de grammaire"></canvas>
         <div class="map-tools"><label class="filter">${ICON.search}<input id="mq" type="search" placeholder="Trouver une fiche sur la carte…" autocomplete="off"></label>
           <button class="btn small" id="mread" title="Mettre en évidence les fiches lues">${ICON.check} Mes lectures</button><button class="btn small" id="mreset">Recentrer</button></div>
-        <div class="map-legend" id="mleg">${D.themes.map((t, i) => `<button data-th="${i}"><i style="background:var(${themeVar(i)})"></i>${esc(t.title)}</button>`).join('')}<button data-th="-1"><i style="background:var(--map-x)"></i>Fiches du sommaire</button></div>
+        <div class="map-legend" id="mleg">${D.themes.map((t, i) => `<button data-th="${i}"><i style="background:var(${themeVar(i)})"></i>${esc(G.tx(t.title))}</button>`).join('')}<button data-th="-1"><i style="background:var(--map-x)"></i>${G.T('Fiches du sommaire', 'Fiches aus dem Register')}</button></div>
         <div class="map-card" id="mcard" hidden></div>
         <div class="peek" id="mpeek" hidden style="pointer-events:none"></div>
       </div></div>`);
@@ -204,14 +204,14 @@
     function zoomAt(x, y, s, base) { s = Math.max(0.25, Math.min(8, s)); view.x = x - ((x - base.x) / base.s) * s; view.y = y - ((y - base.y) / base.s) * s; view.s = s; draw(); }
     function showPeek(k, p) {
       const pk = $('#mpeek', el); if (k < 0 || sel >= 0) { pk.hidden = true; return; }
-      const r = G.rule(N[k].id); pk.innerHTML = `<div class="k">${r.th ? esc(D.themes[r.th[0]].title) : 'Sommaire'}</div><b>${esc(r.title)}</b><div class="m">${plural(ADJ[k].length, 'voisin')} · ${plural(r.ex.length, 'exercice')}</div>`;
+      const r = G.rule(N[k].id); pk.innerHTML = `<div class="k">${r.th ? esc(G.tx(D.themes[r.th[0]].title)) : G.T('Sommaire', 'Register')}</div><b>${esc(r.title)}</b><div class="m">${plural(ADJ[k].length, 'voisin')} · ${plural(r.ex.length, 'exercice')}</div>`;
       pk.hidden = false; pk.style.position = 'absolute'; pk.style.left = Math.min(p[0] + 16, w - 340) + 'px'; pk.style.top = Math.min(p[1] + 16, H - 110) + 'px';
     }
     function select(k) {
       sel = k; const card = $('#mcard', el); $('#mpeek', el).hidden = true;
       if (k < 0) { card.hidden = true; draw(); return; }
       const n = N[k]; const r = G.rule(n.id);
-      card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">${r.th ? esc(D.themes[r.th[0]].title) : 'Sommaire'}</span><button class="icon-btn" style="width:30px;height:30px" data-x aria-label="Fermer">${ICON.close}</button></div>
+      card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">${r.th ? esc(G.tx(D.themes[r.th[0]].title)) : G.T('Sommaire', 'Register')}</span><button class="icon-btn" style="width:30px;height:30px" data-x aria-label="Fermer">${ICON.close}</button></div>
         <h3>${esc(r.title)}</h3><p>${esc(G.excerpt(r, 200))}</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><a class="btn small primary" href="#/regle/${r.id}">Lire la fiche</a><button class="btn small" data-side="#/regle/${r.id}">${ICON.side} À côté</button></div>
         <div class="eyebrow" style="margin-bottom:6px">Voisins (${ADJ[k].length})</div>

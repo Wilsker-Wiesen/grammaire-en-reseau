@@ -75,24 +75,24 @@
     const el = h(`<div class="page"><div class="ex-layout">
       <div>
         <div class="ex-head">
-          <div class="crumbs"><a href="#/exercices">Exercices</a>${col ? `<span class="sep">/</span><a href="#/exercices/${col.id}">${esc(col.title)}</a>` : ''}${e.cat && col && col.id === 'themes' ? `<span class="sep">/</span><a href="#/exercices/themes?g=${col.groups.findIndex((g) => g.title === e.cat)}">${esc(e.cat)}</a>` : ''}</div>
-          <h1>${e.title}</h1>
-          <div class="chips"><span class="chip accent">${G.TYPE_LABEL[e.type]}</span><span class="chip">${plural(e.n, 'item')}</span>${res ? `<span class="chip ${res.best >= 80 ? 'ok' : 'warn'}">Meilleur score : ${res.best} %</span>` : ''}</div>
+          <div class="crumbs"><a href="#/exercices">Exercices</a>${col ? `<span class="sep">/</span><a href="#/exercices/${col.id}">${esc(G.tx(col.title))}</a>` : ''}${e.cat && col && col.id === 'themes' ? `<span class="sep">/</span><a href="#/exercices/themes?g=${col.groups.findIndex((g) => g.title === e.cat)}">${esc(G.tx(e.cat))}</a>` : ''}</div>
+          <h1>${G.tx(e.title)}</h1>
+          <div class="chips"><span class="chip accent">${G.TYPE_LABEL[e.type]}</span><span class="chip">${plural(e.n, 'item')}</span>${res ? `<span class="chip ${res.best >= 80 ? 'ok' : 'warn'}">${G.T('Meilleur score', 'Bestwert')} : ${res.best} %</span>` : ''}</div>
         </div>
-        ${helps.length + rulesExtra.length ? `<div class="help-strip"><span>Aide :</span>${helps.map((x) => `<button class="chip accent" data-side="${esc(x.href)}">${esc(x.label)}</button>`).join('')}${rulesExtra.map((id) => `<button class="chip accent" data-side="#/regle/${id}">${esc(G.ruleTitle(id))}</button>`).join('')}</div>` : ''}
-        ${e.subtitle ? `<div class="ex-instr">${e.subtitle}</div>` : ''}
-        ${e.instructions ? `<div class="ex-instr" style="margin-top:8px">${e.instructions}</div>` : ''}
-        ${e.reading ? `<details class="ex-reading" open><summary>${esc(e.readingTitle || 'Texte de lecture')}</summary><div class="prose">${e.reading}</div></details>` : ''}
+        ${helps.length + rulesExtra.length ? `<div class="help-strip"><span>Aide :</span>${helps.map((x) => `<button class="chip accent" data-side="${esc(x.href)}">${esc(helpLabel(x))}</button>`).join('')}${rulesExtra.map((id) => `<button class="chip accent" data-side="#/regle/${id}">${esc(G.ruleTitle(id))}</button>`).join('')}</div>` : ''}
+        ${e.subtitle ? `<div class="ex-instr">${G.tx(e.subtitle)}</div>` : ''}
+        ${e.instructions ? `<div class="ex-instr" style="margin-top:8px">${G.tx(e.instructions)}</div>` : ''}
+        ${e.reading ? `<details class="ex-reading" open><summary>${esc(G.tx(e.readingTitle) || G.T('Texte de lecture', 'Lesetext'))}</summary><div class="prose">${e.reading}</div></details>` : ''}
         <div id="ex-zone" style="margin-top:18px"></div>
         ${prev || next ? `<nav class="pager" style="max-width:none">${prev ? `<a href="#/exercice/${prev.id}"><span>← Précédent</span><b>${esc(G.exTitle(G.ex(prev.id)))}</b></a>` : ''}${next ? `<a class="next" href="#/exercice/${next.id}"><span>Suivant →</span><b>${esc(G.exTitle(G.ex(next.id)))}</b></a>` : ''}</nav>` : ''}
       </div>
       <aside class="rail">
         <div class="rail-box"><h3>Aide <span class="n num">${helps.length + rulesExtra.length}</span></h3>
-          ${helps.length + rulesExtra.length ? `<ul class="linklist">${helps.map((x) => helpItem(x.href, x.label)).join('')}${rulesExtra.map((id) => helpItem('#/regle/' + id, G.ruleTitle(id))).join('')}</ul>
+          ${helps.length + rulesExtra.length ? `<ul class="linklist">${helps.map((x) => helpItem(x.href, helpLabel(x))).join('')}${rulesExtra.map((id) => helpItem('#/regle/' + id, G.ruleTitle(id))).join('')}</ul>
           <p style="margin:10px 0 0;font-size:12.5px;color:var(--muted)">${ICON.side.replace('<svg', '<svg style="width:14px;height:14px;vertical-align:-2px"')} ouvre la fiche à côté, sans quitter l’exercice.</p>` : '<p style="margin:0;color:var(--muted);font-size:14px">Pas de fiche d’aide associée. Utilisez la recherche (Ctrl K).</p>'}
         </div>
         ${(e.nav || []).length ? `<div class="rail-box"><h3>Voir aussi</h3><ul class="linklist">${e.nav.map((x) => `<li><a href="${esc(x.href)}"><span class="t">${esc(x.label)}</span></a></li>`).join('')}</ul></div>` : ''}
-        <div class="rail-box"><h3>Comment ça marche</h3><p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5">${HOWTO[e.type]}</p></div>
+        <div class="rail-box"><h3>Comment ça marche</h3><p style="margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5">${G.T(HOWTO[e.type], HOWTO_DE[e.type])}</p></div>
       </aside></div></div>`);
     $$('[data-side]', el).forEach((b) => b.onclick = (ev) => { ev.preventDefault(); G.openDrawer(b.dataset.side); });
     const zone = $('#ex-zone', el);
@@ -102,6 +102,12 @@
   function helpItem(href, label) {
     return `<li style="display:flex;align-items:center;gap:2px"><a href="${esc(href)}" style="flex:1"><span class="dot-ic ${S.data.read[(href.split('/')[2])] ? 'done' : ''}"></span><span class="t">${esc(label)}</span></a><button class="icon-btn" style="width:32px;height:32px" data-side="${esc(href)}" title="Ouvrir à côté" aria-label="Ouvrir ${esc(label)} à côté">${ICON.side}</button></li>`;
   }
+  const helpLabel = (x) => { const m = /#\/regle\/([^/]+)/.exec(x.href); return m ? G.ruleTitle(m[1]) : G.tx(x.label); };
+  const HOWTO_DE = {
+    cloze: 'Fülle die Lücken aus und klicke auf <b>Prüfen</b> (Strg Enter). <b>Enter</b> springt zur nächsten Lücke. <b>Tipp</b> zeigt den nächsten Buchstaben in der aktiven Lücke. Jeder Fehler und jeder Tipp kostet Punkte.',
+    quiz: 'Wähle die richtige Antwort. Eine richtige erste Antwort bringt alle Punkte; jeder weitere Versuch kostet welche.',
+    match: 'Klicke auf den Anfang einer Wendung, dann auf ihr Ende. Gefundene Paare werden grün.',
+  };
   const HOWTO = {
     cloze: 'Remplissez les lacunes puis cliquez sur <b>Vérifier</b> (Ctrl Entrée). <b>Entrée</b> passe à la lacune suivante. <b>Indice</b> révèle la lettre suivante dans la lacune active. Chaque erreur et chaque indice coûtent des points.',
     quiz: 'Choisissez la bonne réponse. Une première réponse juste rapporte tous les points ; chaque essai supplémentaire en coûte.',

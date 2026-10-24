@@ -11,6 +11,15 @@
     { id: 'express', title: 'Locution express', desc: 'Un début d’expression, quatre fins possibles. Ou l’inverse, en mode retourné.', ic: ICON.quote, color: 'linear-gradient(140deg,#134e4a,#2f8fb8)' },
     { id: 'revision', title: 'Révision espacée', desc: 'Vos erreurs reviennent au bon moment, jusqu’à ce qu’elles soient acquises.', ic: ICON.redo, color: 'linear-gradient(140deg,var(--t-950),var(--t-700))', href: '#/revision' },
   ];
+  const GAMES_DE = {
+    sprint: ['Zeitrennen', 'Sechzig Sekunden, ein Satz nach dem anderen. Richtige Antworten in Serie bringen Bonuspunkte.'],
+    defi: ['Tagesaufgabe', 'Zehn Fragen aus dem ganzen Programm, heute für alle gleich. Nur der erste Versuch zählt.'],
+    chemin: ['Der Weg durch die Begriffe', 'Verbinde zwei Fiches über ihre Verweise. Lies die Auszüge, um die richtige Richtung zu wählen.'],
+    memo: ['Memo der Wendungen', 'Decke Karten auf, setze die Redewendungen zusammen und erfahre ihre Bedeutung.'],
+    express: ['Wendung express', 'Ein Anfang, vier mögliche Enden. Oder umgekehrt im umgedrehten Modus.'],
+    revision: ['Wiederholung mit Abstand', 'Deine Fehler kommen zur richtigen Zeit zurück, bis sie sitzen.'],
+  };
+  GAMES.forEach((g) => { const fr = [g.title, g.desc]; Object.defineProperty(g, 'title', { get: () => G.T(fr[0], GAMES_DE[g.id][0]) }); Object.defineProperty(g, 'desc', { get: () => G.T(fr[1], GAMES_DE[g.id][1]) }); });
   const lkey = (t) => fold(t).replace(/[^a-z]/g, '');
   G.meaning = (a, b) => (D.meanings || {})[lkey(a + ' ' + b)] || '';
   G.pairKey = (a, b) => 'p:' + lkey(a) + '|' + lkey(b);
@@ -25,7 +34,7 @@
   G.gameCards = (n) => GAMES.slice(0, n || GAMES.length).map((g) => `<a class="card" href="${g.href || '#/jeu/' + g.id}"><span class="gic" style="background:${g.color}">${g.ic}</span><h3>${g.title}</h3><p>${g.desc}</p><div class="meta">${gameStatus(g)}</div></a>`).join('');
 
   G.views.jeux = () => h(`<div class="page"><div class="page-head"><div class="eyebrow">Jeux &amp; défis</div><h1>Jouer avec la grammaire</h1>
-    <p class="lead">Tous les jeux puisent dans les exercices et les locutions du programme. Les erreurs rejoignent votre pile de révision.</p></div>
+    <p class="lead">${G.T('Tous les jeux puisent dans les exercices et les locutions du programme. Les erreurs rejoignent votre pile de révision.', 'Alle Spiele nutzen die Übungen und Redewendungen des Programms. Fehler kommen in deinen Wiederholungsstapel.')}</p></div>
     <div class="grid game-cards">${G.gameCards()}</div></div>`);
 
   // ------------------------------------------------------------------ réserve de questions
@@ -58,7 +67,7 @@
     const finishWith = (ok, first, delay) => { over = true; setTimeout(() => onDone(ok, first), delay); };
     if (item.t === 'c' && !G.fitsAlone(e, item.i)) {
       // lacune liée à un tableau ou à une consigne particulière : on la refait dans son exercice
-      host.innerHTML = `<div class="flash-card">${head}<p style="font:18px/1.55 var(--f-read);margin:0 0 14px">Cette lacune dépend de son exercice (tableau, mot souligné ou consigne). Refaites-la dans son contexte, puis revenez.</p>
+      host.innerHTML = `<div class="flash-card">${head}<p style="font:18px/1.55 var(--f-read);margin:0 0 14px">${G.T('Cette lacune dépend de son exercice (tableau, mot souligné ou consigne). Refaites-la dans son contexte, puis revenez.', 'Diese Lücke hängt an ihrer Übung (Tabelle, unterstrichenes Wort oder Anweisung). Mach sie dort noch einmal und komm dann zurück.')}</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn primary" href="#/exercice/${e.id}">${ICON.open} Ouvrir l’exercice</a><button class="btn" id="did">C’est fait, je l’ai réussie</button><button class="btn ghost" id="notyet">Pas encore</button></div>${src}</div>`;
       $('#did', host).onclick = () => onDone(true, true);
       $('#notyet', host).onclick = () => onDone(false, false, true);
@@ -159,8 +168,8 @@
     const rec = (c) => S.data.games['sprint:' + c];
     const intro = (cat = S.data.prefs.sprintCat || '') => {
       host.innerHTML = `<div class="flash-card"><p style="font:18px/1.55 var(--f-read);margin:0 0 12px">${g.desc}</p>
-        <ul style="margin:0 0 16px;padding-left:1.2em;color:var(--ink-2);line-height:1.6"><li>Bonne réponse du premier coup : 1 point, +1 bonus tous les 5 d’affilée.</li><li>Erreur : −3 secondes. Passer : −2 secondes.</li><li>Le chronomètre s’arrête pendant que la correction s’affiche.</li></ul>
-        <label style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><span class="eyebrow">Notion</span><select id="cat" style="height:40px;border-radius:10px;border:1px solid var(--line-2);background:var(--bg);padding:0 10px;max-width:100%"><option value="">Tout le programme (${count('')} phrases)</option>${cats.map((c) => `<option ${c === cat ? 'selected' : ''} value="${esc(c)}">${esc(c)} (${count(c)})</option>`).join('')}</select></label>
+        <ul style="margin:0 0 16px;padding-left:1.2em;color:var(--ink-2);line-height:1.6">${G.T('<li>Bonne réponse du premier coup : 1 point, +1 bonus tous les 5 d’affilée.</li><li>Erreur : −3 secondes. Passer : −2 secondes.</li><li>Le chronomètre s’arrête pendant que la correction s’affiche.</li>', '<li>Richtig beim ersten Versuch: 1 Punkt, +1 Bonus alle 5 in Folge.</li><li>Fehler: −3 Sekunden. Überspringen: −2 Sekunden.</li><li>Die Uhr steht, solange die Korrektur angezeigt wird.</li>')}</ul>
+        <label style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px"><span class="eyebrow">Notion</span><select id="cat" style="height:40px;border-radius:10px;border:1px solid var(--line-2);background:var(--bg);padding:0 10px;max-width:100%"><option value="">Tout le programme (${count('')} phrases)</option>${cats.map((c) => `<option ${c === cat ? 'selected' : ''} value="${esc(c)}">${esc(G.tx(c))} (${count(c)})</option>`).join('')}</select></label>
         <button class="btn primary" id="go">${ICON.play} Commencer</button> <span class="chip" id="rec" style="margin-left:8px"></span></div>`;
       const sel = $('#cat', host); const showRec = () => { const r = rec(sel.value); $('#rec', host).textContent = r != null ? 'Record ici : ' + r : 'Pas encore de record ici'; };
       sel.onchange = showRec; showRec();
@@ -189,7 +198,7 @@
         const key = 'sprint:' + cat; const isRec = !stopped && pts > (S.data.games[key] || 0);
         if (!stopped) S.data.games[key] = Math.max(S.data.games[key] || 0, pts);
         S.markDay(1); S.save(); G.updateBadge();
-        summary(host, { big: pts, label: stopped ? 'Partie arrêtée' : isRec ? 'Nouveau record !' : 'Temps écoulé', text: `${plural(pts, 'point')}, meilleure série : ${best}.${missed.length ? ` ${plural(missed.length, 'phrase')} ${missed.length > 1 ? 'rejoignent' : 'rejoint'} la révision.` : ''}${stopped ? ' Une partie arrêtée ne compte pas pour le record.' : ''}`, again: () => intro(cat), items: missed });
+        summary(host, { big: pts, label: stopped ? 'Partie arrêtée' : isRec ? 'Nouveau record !' : 'Temps écoulé', text: G.T(`${plural(pts, 'point')}, meilleure série : ${best}.${missed.length ? ` ${plural(missed.length, 'phrase')} ${missed.length > 1 ? 'rejoignent' : 'rejoint'} la révision.` : ''}${stopped ? ' Une partie arrêtée ne compte pas pour le record.' : ''}`, `${plural(pts, 'point')}, längste Serie: ${best}.${missed.length ? ` ${plural(missed.length, 'phrase')} ${missed.length > 1 ? 'kommen' : 'kommt'} in die Wiederholung.` : ''}${stopped ? ' Ein beendetes Spiel zählt nicht für den Rekord.' : ''}`), again: () => intro(cat), items: missed });
       }
       $('#stop', host).onclick = () => end(true);
       nextQ();
@@ -217,7 +226,7 @@
           const pct = Math.round((good / order.length) * 100);
           if (!practice) { S.data.games['defi:' + day] = pct; S.data.games.defi = Math.max(S.data.games.defi || 0, good); delete S.data.games['defi-run:' + day]; }
           missed.forEach((it) => G.review.add(keyOf(it), it)); S.markDay(1); S.save(); G.updateBadge();
-          return summary(host, { big: good + '/10', label: (practice ? 'Entraînement · ' : '') + 'Défi du ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }), text: good === 10 ? 'Sans faute. Revenez demain pour un nouveau défi.' : 'Les questions manquées sont dans votre révision. Nouveau défi demain.', again: () => start(true), againLabel: 'S’entraîner sur ce défi', items: missed });
+          return summary(host, { big: good + '/10', label: G.T((practice ? 'Entraînement · ' : '') + 'Défi du ' + new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }), (practice ? 'Training · ' : '') + 'Tagesaufgabe vom ' + new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })), text: good === 10 ? G.T('Sans faute. Revenez demain pour un nouveau défi.', 'Fehlerfrei. Morgen gibt es eine neue Tagesaufgabe.') : G.T('Les questions manquées sont dans votre révision. Nouveau défi demain.', 'Verpasste Fragen sind in deiner Wiederholung. Morgen gibt es eine neue Tagesaufgabe.'), again: () => start(true), againLabel: 'S’entraîner sur ce défi', items: missed });
         }
         $('#qk', host).textContent = `${k + 1}/10`; $('#pb', host).style.width = (k / 10) * 100 + '%';
         const it = order[k];
@@ -230,10 +239,10 @@
       step();
     };
     if (official != null) {
-      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">Défi d’aujourd’hui relevé : <b>${official} %</b>${yesterday != null ? ` (hier : ${yesterday} %)` : ''}. Vous pouvez le refaire pour vous entraîner ; seul le premier essai compte.</p><button class="btn primary" id="go">${ICON.redo} S’entraîner sur ce défi</button></div>`;
+      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">${G.T(`Défi d’aujourd’hui relevé : <b>${official} %</b>${yesterday != null ? ` (hier : ${yesterday} %)` : ''}. Vous pouvez le refaire pour vous entraîner ; seul le premier essai compte.`, `Heutige Tagesaufgabe erledigt: <b>${official} %</b>${yesterday != null ? ` (gestern: ${yesterday} %)` : ''}. Du kannst sie zum Üben wiederholen; nur der erste Versuch zählt.`)}</p><button class="btn primary" id="go">${ICON.redo} S’entraîner sur ce défi</button></div>`;
       $('#go', host).onclick = () => start(true);
     } else {
-      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">Dix questions, sans limite de temps. Seul le premier essai compte pour votre score du jour.${yesterday != null ? ` Hier : <b>${yesterday} %</b>.` : ''}</p><button class="btn primary" id="go">${ICON.play} Relever le défi</button></div>`;
+      host.innerHTML = `<div class="flash-card"><p style="font:18px/1.5 var(--f-read);margin:0 0 14px">${G.T(`Dix questions, sans limite de temps. Seul le premier essai compte pour votre score du jour.${yesterday != null ? ` Hier : <b>${yesterday} %</b>.` : ''}`, `Zehn Fragen, ohne Zeitlimit. Nur der erste Versuch zählt für dein Tagesergebnis.${yesterday != null ? ` Gestern: <b>${yesterday} %</b>.` : ''}`)}</p><button class="btn primary" id="go">${ICON.play} Relever le défi</button></div>`;
       $('#go', host).onclick = () => start(false);
     }
     return el;
@@ -251,7 +260,7 @@
       const face = (b, up) => { const c = cards[+b.dataset.k]; $('span', b).textContent = up ? c.t : ''; b.setAttribute('aria-label', up ? `${c.side} : ${c.t}` : `Carte ${+b.dataset.k + 1}, ${c.side} d’expression, face cachée`); };
       $$('.memo button', host).forEach((b) => b.onclick = () => {
         if (b.classList.contains('up') || b.classList.contains('found') || open.length === 2) return;
-        if (open.length === 1 && cards[+open[0].dataset.k].side === cards[+b.dataset.k].side) { G.toast(`Choisissez maintenant une carte « ${cards[+open[0].dataset.k].side === 'début' ? 'fin' : 'début'} ».`); return; }
+        if (open.length === 1 && cards[+open[0].dataset.k].side === cards[+b.dataset.k].side) { G.toast(G.T(`Choisissez maintenant une carte « ${cards[+open[0].dataset.k].side === 'début' ? 'fin' : 'début'} ».`, `Wähle jetzt eine Karte „${cards[+open[0].dataset.k].side === 'début' ? 'Ende' : 'Anfang'}“.`)); return; }
         b.classList.add('up'); face(b, true); open.push(b);
         if (open.length < 2) return;
         moves++; $('#mv', host).textContent = moves;
@@ -266,7 +275,7 @@
             $('#mm', host).innerHTML = `<b>« ${esc(st.t)} ${esc(en.t)} »</b>${m ? ` : ${esc(m)}` : ''}`;
             if (found === 8) {
               const best = S.data.games.memo; if (best == null || moves < best) S.data.games.memo = moves; S.markDay(1); S.save();
-              setTimeout(() => summary(host, { big: moves, label: 'coups', text: `Toutes les locutions sont reformées${best == null || moves < best ? ' : nouveau record' : ''}.`, again: play,
+              setTimeout(() => summary(host, { big: moves, label: G.T('coups', 'Züge'), text: G.T(`Toutes les locutions sont reformées${best == null || moves < best ? ' : nouveau record' : ''}.`, `Alle Wendungen sind zusammengesetzt${best == null || moves < best ? ': neuer Rekord' : ''}.`), again: play,
                 extra: `<div style="text-align:left;margin:0 0 18px"><ul class="linklist">${learned.map(([a, b, m]) => `<li style="padding:6px 0;border-top:1px solid var(--line)"><b>${esc(a)} ${esc(b)}</b>${m ? `<br><span style="color:var(--ink-2);font-size:14px">${esc(m)}</span>` : ''}</li>`).join('')}</ul></div>` }), 700);
             }
           }, 300);
@@ -291,7 +300,7 @@
         if (k >= rounds.length) {
           const key = reverse ? 'express-r' : 'express'; S.data.games[key] = Math.max(S.data.games[key] || 0, good);
           missed.forEach((it) => G.review.add(keyOf(it), it)); S.markDay(1); S.save(); G.updateBadge();
-          return summary(host, { big: `${good}/12`, label: 'Locution express', text: missed.length ? `${plural(missed.length, 'expression')} ${missed.length > 1 ? 'rejoignent' : 'rejoint'} la révision.` : 'Aucune erreur.', again: () => play(reverse) });
+          return summary(host, { big: `${good}/12`, label: 'Locution express', text: missed.length ? G.T(`${plural(missed.length, 'expression')} ${missed.length > 1 ? 'rejoignent' : 'rejoint'} la révision.`, `${plural(missed.length, 'expression')} ${missed.length > 1 ? 'kommen' : 'kommt'} in die Wiederholung.`) : G.T('Aucune erreur.', 'Kein Fehler.'), again: () => play(reverse) });
         }
         $('#qk', host).textContent = `${k + 1}/12`;
         const p = rounds[k]; const it = { t: 'p', s: p[0], e: p[1] };
@@ -327,7 +336,7 @@
         if (cur === target) {
           const steps = trail.length - 1; const score = Math.max(0, 100 - (steps - best) * 20 - (hinted ? 50 : 0));
           S.data.games.chemin = Math.max(S.data.games.chemin || 0, score); S.markDay(1); S.save();
-          return summary(host, { big: score, label: steps === best && !hinted ? 'points · chemin optimal !' : `points · ${plural(steps, 'étape')} (le plus court : ${best})${hinted ? ' · avec aide' : ''}`, text: trail.map((x) => esc(G.ruleTitle(x))).join(' → '), again: play });
+          return summary(host, { big: score, label: steps === best && !hinted ? G.T('points · chemin optimal !', 'Punkte · kürzester Weg!') : G.T(`points · ${plural(steps, 'étape')} (le plus court : ${best})${hinted ? ' · avec aide' : ''}`, `Punkte · ${plural(steps, 'étape')} (kürzester: ${best})${hinted ? ' · mit Hilfe' : ''}`), text: trail.map((x) => esc(G.ruleTitle(x))).join(' → '), again: play });
         }
         const outs = (r.out || []).filter((x) => G.rule(x) && !G.rule(x).stub);
         host.innerHTML = `<div class="stage-top"><div class="stat"><span>Étapes</span><b>${trail.length - 1}</b></div><div class="stat"><span>Minimum</span><b>${best}</b></div><span class="grow"></span>${hinted ? '<span class="chip warn">Aide utilisée : −50 pts</span>' : ''}<button class="btn small ghost" id="giveup">Montrer un chemin (−50 pts)</button></div>
@@ -358,8 +367,8 @@
 
   // ------------------------------------------------------------------ révision espacée
   G.views.revision = function () {
-    const el = h(`<div class="page"><div class="stage"><div class="page-head"><div class="eyebrow">Révision espacée</div><h1>À revoir</h1>
-      <p class="lead">Les items manqués reviennent après 1, 3, 7, 16 puis 35 jours ; une erreur les renvoie au début. Une séance compte au plus 20 items, mélangés entre les exercices.</p></div><div id="st"></div></div></div>`);
+    const el = h(`<div class="page"><div class="stage"><div class="page-head"><div class="eyebrow">${G.T('Révision espacée', 'Wiederholung mit Abstand')}</div><h1>${G.T('À revoir', 'Wiederholen')}</h1>
+      <p class="lead">${G.T('Les items manqués reviennent après 1, 3, 7, 16 puis 35 jours ; une erreur les renvoie au début. Une séance compte au plus 20 items, mélangés entre les exercices.', 'Verpasste Aufgaben kommen nach 1, 3, 7, 16 und 35 Tagen wieder; ein Fehler schickt sie an den Anfang zurück. Eine Sitzung hat höchstens 20 Aufgaben, gemischt aus verschiedenen Übungen.')}</p></div><div id="st"></div></div></div>`);
     const host = $('#st', el);
     const valid = (x) => (x.t === 'p' ? x.s && x.e : G.ex(x.ex));
     const dueAll = G.review.due().filter(valid);
@@ -370,7 +379,8 @@
     const total = G.review.count();
     if (!queue.length) {
       const next = Object.values(S.data.review).map((r) => r.due).sort()[0];
-      host.innerHTML = `<div class="empty"><strong>${total ? 'Rien à revoir aujourd’hui.' : 'Votre pile de révision est vide.'}</strong>${total ? `${plural(total, 'item')} en attente, prochain rendez-vous le ${new Date(next + 'T12:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}.` : 'Faites quelques exercices : les lacunes manquées viendront s’y ranger.'}${S.data.games.acquis ? `<br>${plural(S.data.games.acquis, 'item acquis', 'items acquis')} jusqu’ici.` : ''}<div style="margin-top:14px"><a class="btn primary" href="#/jeu/sprint">${ICON.bolt} Une course contre la montre ?</a></div></div>`;
+      const nextTxt = next ? new Date(next + 'T12:00').toLocaleDateString(G.T('fr-FR', 'de-DE'), { day: 'numeric', month: 'long' }) : '';
+      host.innerHTML = `<div class="empty"><strong>${total ? G.T('Rien à revoir aujourd’hui.', 'Heute ist nichts zu wiederholen.') : G.T('Votre pile de révision est vide.', 'Dein Wiederholungsstapel ist leer.')}</strong>${total ? G.T(`${plural(total, 'item')} en attente, prochain rendez-vous le ${nextTxt}.`, `${plural(total, 'item')} warten, nächster Termin am ${nextTxt}.`) : G.T('Faites quelques exercices : les lacunes manquées viendront s’y ranger.', 'Mach ein paar Übungen: Verpasste Lücken landen hier.')}${S.data.games.acquis ? `<br>${plural(S.data.games.acquis, 'item acquis', 'items acquis')}${G.T(' jusqu’ici.', ' bisher.')}` : ''}<div style="margin-top:14px"><a class="btn primary" href="#/jeu/sprint">${ICON.bolt} ${G.T('Une course contre la montre ?', 'Wie wär’s mit einem Zeitrennen?')}</a></div></div>`;
       return el;
     }
     const n0 = queue.length; let doneN = 0, good = 0; const graded = new Set();
@@ -378,7 +388,7 @@
     const step = () => {
       if (!queue.length) {
         S.markDay(1); S.save(); G.updateBadge();
-        host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">Séance terminée</div><div style="font:800 56px/1 var(--f-display);color:var(--accent);margin:12px 0">${good}/${n0}</div><p style="font:18px/1.5 var(--f-read)">Réussis du premier coup : ils montent d’une boîte. Les autres ont été retravaillés jusqu’à la bonne réponse et reviendront demain.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${G.review.due().length ? `<a class="btn primary" href="#/revision" data-reload>Encore ${plural(Math.min(20, G.review.due().length), 'item')}</a>` : ''}<a class="btn" href="#/">Retour à l’accueil</a></div></div>`;
+        host.innerHTML = `<div class="flash-card" style="text-align:center"><div class="eyebrow">Séance terminée</div><div style="font:800 56px/1 var(--f-display);color:var(--accent);margin:12px 0">${good}/${n0}</div><p style="font:18px/1.5 var(--f-read)">${G.T('Réussis du premier coup : ils montent d’une boîte. Les autres ont été retravaillés jusqu’à la bonne réponse et reviendront demain.', 'Beim ersten Versuch richtig: Sie rücken ein Fach weiter. Die anderen hast du bis zur richtigen Antwort geübt; sie kommen morgen wieder.')}</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${G.review.due().length ? `<a class="btn primary" href="#/revision" data-reload>${G.T('Encore', 'Noch')} ${plural(Math.min(20, G.review.due().length), 'item')}</a>` : ''}<a class="btn" href="#/">Retour à l’accueil</a></div></div>`;
         const rl = $('[data-reload]', host); if (rl) rl.onclick = (ev) => { ev.preventDefault(); G.refresh(); };
         return;
       }

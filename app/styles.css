@@ -646,3 +646,10 @@ textarea.io { width: 100%; min-height: 120px; font: 12px/1.4 var(--f-mono); padd
 .guide-path { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 10px; }
 .guide-path li { display: flex; flex-direction: column; gap: 2px; }
 .guide-path span { font: 13.5px/1.4 var(--f-ui); color: var(--muted); }
+
+.lang-btn { height: 32px; min-width: 40px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--accent); font: 600 12px/1 var(--f-mono); letter-spacing: .08em; cursor: pointer; align-self: center; }
+.lang-btn:hover { border-color: var(--accent-2); background: var(--accent-faint); }
+.fr-title { font: italic 400 17px/1.3 var(--f-read); color: var(--muted); margin-top: -4px; }
+.az-de { display: block; font: 400 13px/1.35 var(--f-ui); color: var(--muted); margin-top: 2px; }
+.az-de.inline { display: inline; margin-left: 6px; }
+.az-de.inline::before { content: "· "; }

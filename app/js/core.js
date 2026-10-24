@@ -15,13 +15,13 @@
   const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const today = () => ymd(new Date());
   const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); };
-  const plural = (n, s, p) => `${fmt(n)} ${n > 1 ? (p || s + 's') : s}`;
+  const plural0 = (n, s, p) => `${fmt(n)} ${n > 1 ? (p || s + 's') : s}`;
   function h(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
   function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
   function hashStr(s) { let x = 2166136261; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; }
   function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   function shuffle(arr, r = Math.random) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-  Object.assign(G, { $, $$, esc, strip, fold, fmt, today, ymd, addDays, plural, h, debounce, hashStr, rng, shuffle });
+  Object.assign(G, { $, $$, esc, strip, fold, fmt, today, ymd, addDays, plural: plural0, h, debounce, hashStr, rng, shuffle });
 
   const ICON = {
     rule: '<svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>',
@@ -49,13 +49,19 @@
   G.ICON = ICON;
 
   // ------------------------------------------------------------------ accès aux données
-  G.rule = (id) => D.rules[D.alias[id] || id];
+  // auf Deutsch : Titel und Text der Fiche aus der deutschen Fassung (Beispiele bleiben französisch)
+  const deCache = {};
+  G.rule = (id) => {
+    const r = D.rules[D.alias[id] || id];
+    if (!r || G.lang !== 'de' || !G.DE || !G.DE.rules[r.id]) return r;
+    return deCache[r.id] || (deCache[r.id] = Object.assign({}, r, G.DE.rules[r.id], { frTitle: r.title }));
+  };
   G.ex = (id) => D.exercises[id];
   G.ruleTitle = (id) => (G.rule(id) || {}).title || id;
-  G.exTitle = (e) => (strip(e.title) || e.file) + (e.type === 'cloze' && e.gaps.some((g) => g.opts) ? ' (avec menu)' : '');
+  G.exTitle = (e) => (strip(G.tx(e.title)) || e.file) + (e.type === 'cloze' && e.gaps.some((g) => g.opts) ? G.T(' (avec menu)', ' (mit Auswahlmenü)') : '');
   const THEME_COLORS = ['var(--map-0)', 'var(--map-1)', 'var(--map-2)', 'var(--map-3)', 'var(--map-4)'];
   G.themeColor = (i) => (i >= 0 && i < 5 ? THEME_COLORS[i] : 'var(--map-x)');
-  G.TYPE_LABEL = { cloze: 'Texte à compléter', quiz: 'Questionnaire', match: 'Associations' };
+  G.TYPE_LABEL = new Proxy({ cloze: ['Texte à compléter', 'Lückentext'], quiz: ['Questionnaire', 'Quiz'], match: ['Associations', 'Zuordnung'] }, { get: (o, k) => o[k] && G.T(o[k][0], o[k][1]) });
   G.excerpt = (rule, n = 220) => { const t = strip(rule.html); return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t; };
 
   // ------------------------------------------------------------------ stockage (local + base privée de l'artefact)
@@ -255,11 +261,11 @@
     const p = peek(); let html = '';
     if (rt.parts[0] === 'regle') {
       const r = G.rule(rt.parts[1]); if (!r) return;
-      html = `<div class="k">Fiche</div><b>${esc(r.title)}</b><p>${esc(G.excerpt(r, 320))}</p><div class="m">${r.ex.length ? plural(r.ex.length, 'exercice lié', 'exercices liés') + ' · ' : ''}${plural(r.in.length + r.out.length, 'lien')}</div>`;
+      html = `<div class="k">${G.T('Fiche', 'Fiche')}</div><b>${esc(r.title)}</b><p>${esc(G.excerpt(r, 320))}</p><div class="m">${r.ex.length ? G.plural(r.ex.length, 'exercice lié', 'exercices liés') + ' · ' : ''}${G.plural(r.in.length + r.out.length, 'lien')}</div>`;
     } else {
       const e = G.ex(rt.parts[1]); if (!e) return;
       const res = S.exResult(e.id);
-      html = `<div class="k">${G.TYPE_LABEL[e.type]}</div><b>${esc(G.exTitle(e))}</b><p>${esc(strip(e.instructions || e.subtitle || ''))}</p><div class="m">${plural(e.n, 'item')}${res ? ' · meilleur score ' + res.best + ' %' : ''}</div>`;
+      html = `<div class="k">${G.TYPE_LABEL[e.type]}</div><b>${esc(G.exTitle(e))}</b><p>${esc(strip(G.tx(e.instructions) || G.tx(e.subtitle) || ''))}</p><div class="m">${G.plural(e.n, 'item')}${res ? G.T(' · meilleur score ', ' · Bestwert ') + res.best + ' %' : ''}</div>`;
     }
     p.innerHTML = html; p.hidden = false;
     const b = a.getBoundingClientRect(); const pw = p.offsetWidth, ph = p.offsetHeight;
@@ -303,12 +309,14 @@
     INDEX = [];
     for (const r of Object.values(D.rules)) {
       if (r.stub) continue;
-      const text = strip(r.html);
-      INDEX.push({ kind: 'rule', id: r.id, title: r.title, ft: fold(r.title), text, fx: fold(text), href: '#/regle/' + r.id, w: 1 + Math.min(r.in.length, 30) / 30 });
+      const rr = G.rule(r.id);
+      const text = strip(rr.html);
+      // les deux langues sont cherchables : titre allemand + titre français
+      INDEX.push({ kind: 'rule', id: r.id, title: rr.title, ft: fold(rr.title + (rr.title !== r.title ? ' ' + r.title : '')), text, fx: fold(text + (rr.html !== r.html ? ' ' + strip(r.html) : '')), href: '#/regle/' + r.id, w: 1 + Math.min(r.in.length, 30) / 30 });
     }
     for (const e of Object.values(D.exercises)) {
       const title = G.exTitle(e);
-      const text = strip([e.subtitle, e.instructions, e.cat, e.body ? e.body.replace(/<gap[^>]*><\/gap>/g, ' … ') : '', (e.questions || []).map((q) => q.q).join(' '), (e.pairs || []).map((p) => p.join(' ')).join(' · ')].join(' '));
+      const text = strip([G.tx(e.subtitle), G.tx(e.instructions), G.tx(e.cat), G.lang === 'de' ? strip(e.title) : '', e.body ? e.body.replace(/<gap[^>]*><\/gap>/g, ' … ') : '', (e.questions || []).map((q) => q.q).join(' '), (e.pairs || []).map((p) => p.join(' ')).join(' · ')].join(' '));
       INDEX.push({ kind: 'ex', id: e.id, title, ft: fold(title + ' ' + (e.cat || '')), text, fx: fold(text), href: '#/exercice/' + e.id, w: .8 });
     }
     for (const s of D.sommaire) {
@@ -373,7 +381,7 @@
     if (!q) {
       const hist = (S.data.hist || []).slice(0, 6);
       pal.items = hist.map((x) => ({ href: x.r, title: x.t, kind: x.r.includes('/exercice/') ? 'ex' : 'rule', text: '' }));
-      box.innerHTML = (hist.length ? '<div class="pr-group">Consultés récemment</div>' + pal.items.map(prItem).join('') : '<div class="pr-empty">Tapez un mot-clé : <b>subjonctif</b>, <b>quoique</b>, <b>participe passé</b>, <b>leur</b>…</div>') +
+      box.innerHTML = (hist.length ? '<div class="pr-group">Consultés récemment</div>' + pal.items.map(prItem).join('') : `<div class="pr-empty">${G.T('Tapez un mot-clé', 'Gib ein Stichwort ein')} : <b>subjonctif</b>, <b>quoique</b>, <b>participe passé</b>, <b>leur</b>…</div>`) +
         '<div class="pr-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> naviguer</span><span><kbd>Entrée</kbd> ouvrir</span><span><kbd>Maj</kbd>+<kbd>Entrée</kbd> ouvrir à côté</span></div>';
     } else {
       const res = G.search(q, 30);
@@ -381,7 +389,7 @@
       pal.items = [...rules, ...exs];
       box.innerHTML = (rules.length ? '<div class="pr-group">Fiches</div>' + rules.map(prItem).join('') : '') +
         (exs.length ? '<div class="pr-group">Exercices</div>' + exs.map(prItem).join('') : '') +
-        (pal.items.length ? `<a class="pr" href="#/recherche?q=${encodeURIComponent(q)}" data-all><span class="ic">${ICON.search}</span><span class="tx"><b>Tous les résultats pour « ${esc(q)} »</b><span>${plural(G.search(q, 500).length, 'résultat')}</span></span></a>` : `<div class="pr-empty">Aucun résultat pour « ${esc(q)} ». Essayez un mot plus court ou sans accent.</div>`);
+        (pal.items.length ? `<a class="pr" href="#/recherche?q=${encodeURIComponent(q)}" data-all><span class="ic">${ICON.search}</span><span class="tx"><b>${G.T(`Tous les résultats pour « ${esc(q)} »`, `Alle Treffer für „${esc(q)}“`)}</b><span>${G.plural(G.search(q, 500).length, 'résultat')}</span></span></a>` : `<div class="pr-empty">${G.T(`Aucun résultat pour « ${esc(q)} ». Essayez un mot plus court ou sans accent.`, `Keine Treffer für „${esc(q)}“. Versuch ein kürzeres Wort oder ohne Akzente.`)}</div>`);
       if (pal.items.length) pal.items.push({ href: `#/recherche?q=${encodeURIComponent(q)}` });
     }
     pal.sel = 0; paletteSel();

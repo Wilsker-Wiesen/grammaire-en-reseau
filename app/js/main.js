@@ -3,6 +3,8 @@
   'use strict';
   const { S, $ } = G;
   S.load();
+  G.lang = S.data.prefs.lang || 'de';
+  document.documentElement.lang = G.lang;
   G.applyPrefs();
   G.setSync('local');
   G.initPalette();
@@ -29,12 +31,22 @@
     else if (ev.altKey && ev.key === 'ArrowLeft') { ev.preventDefault(); G.back(); }
   });
 
-  // route initiale : « #/… » interne, ou ancre simple transmise par le lien de l'artefact (#carte, #jeux…)
-  let start = location.hash || '#/';
-  if (/^#[A-Za-z0-9._~-]+$/.test(start)) start = '#/' + start.slice(1).replace(/\./g, '/');
-  try { history.replaceState({ r: start }, '', start); } catch (e) { /* ignoré */ }
-  G.R.cur = null;
-  G.go(start, { replace: true, force: true });
+  $('#lang-btn').onclick = () => G.setLang(G.lang === 'de' ? 'fr' : 'de');
+  const setLangBtn = () => { const b = $('#lang-btn'); b.textContent = G.lang === 'de' ? 'FR' : 'DE'; b.title = G.lang === 'de' ? 'Version française' : 'Deutsche Fassung'; };
+  setLangBtn();
+
+  // Sprache laden (deutsche Fassung der Fiches bei Bedarf nachladen), dann erste Seite anzeigen
+  (G.lang === 'de' ? G.loadDE() : Promise.resolve()).then(() => {
+    G.translate(document.body);
+    G.startTranslateObserver();
+    // route initiale : « #/… » interne, ou ancre simple transmise par le lien de l'artefact (#carte, #jeux…)
+    let start = location.hash || '#/';
+    if (/^#[A-Za-z0-9._~-]+$/.test(start)) start = '#/' + start.slice(1).replace(/\./g, '/');
+    try { history.replaceState({ r: start }, '', start); } catch (e) { /* ignoré */ }
+    G.R.cur = null;
+    G.go(start, { replace: true, force: true });
+
+  });
 
   // demande au navigateur de ne pas effacer la progression (Safari vide sinon le stockage après 7 jours sans visite)
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { /* ignoré */ }
