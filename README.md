@@ -1,6 +1,6 @@
 # Grammaire en réseau
 
-Französische Grammatik als Netz: Regelfiches, Übungen und Spiele, die aufeinander verweisen. Ein Programm von Jan Wilsker-Wiesen, erstellt mit Claude.
+Französische Grammatik als Netz: Regeln, Übungen und Spiele, die aufeinander verweisen. Ein Programm von Jan Wilsker-Wiesen, erstellt mit Claude.
 
 Probeversion für den eigenen Gebrauch.
 
@@ -10,20 +10,20 @@ Das Repository ist privat; GitHub Pages ist deshalb abgeschaltet und der Workflo
 
 ## Inhalt
 
-- **745 Regelfiches**, thematisch (fünf große Themen mit nummerierten Abschnitten) und alphabetisch (Sommaire von A bis Z).
+- **745 Regeln**, thematisch (fünf große Themen mit nummerierten Abschnitten) und alphabetisch (Sommaire von A bis Z).
 - **380 Übungen** mit **5 874 Aufgaben**: Lückentexte (mit Eingabe oder Auswahlmenü), Fragebögen und Zuordnungen.
 - **4 034 Verweise** zwischen den Texten, in beide Richtungen sichtbar.
 
 ## Funktionen
 
 - Suche über alles (Strg K), akzentunabhängig.
-- Hilfe-Fiche seitlich neben der Übung, Vorschau beim Überfahren von Links.
+- Passende Regel seitlich neben der Übung, Vorschau beim Überfahren von Links.
 - Akzentleiste beim Tippen (à â ç é è ê ë î ï ô œ ù û ü …).
 - Wiederholung mit Abstand (1, 3, 7, 16, 35 Tage), Tagesziel und Serie.
-- Spiele: Course contre la montre, Défi du jour, Le chemin des notions, Mémo und Locution express.
-- Carte des notions: Karte aller Fiches und ihrer Verweise.
+- Spiele: Redewendungs-Express (vier Spielarten, Lernkarten, Aussprache), Tagesquiz, Wettlauf gegen die Zeit, Redewendungs-Memo, Regelpfad.
+- Regelnetz: Karte aller Regeln und ihrer Querverweise.
 - Zweisprachig: Bedienung, Erklärungen und Anweisungen auf Deutsch oder Französisch (Umschalter oben); Beispiele, Übungssätze und Lösungen immer Französisch.
-- Anleitung, Fortschrittsseite, Favoriten, Notizen, Hell- und Dunkelmodus, Offline-Modus.
+- Anleitung, Fortschrittsseite, Merkliste, Notizen, Hell- und Dunkelmodus, Offline-Modus.
 
 ## Aufbau
 
