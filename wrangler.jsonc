@@ -1,0 +1,6 @@
+// Web-App auf Cloudflare : python3 tools/build_site.py && npx wrangler@4 deploy
+{
+  "name": "grammaire-en-reseau",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./_site" }
+}
