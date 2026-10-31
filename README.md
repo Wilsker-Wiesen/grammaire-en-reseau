@@ -2,13 +2,9 @@
 
 Französische Grammatik als Netz: Regeln, Übungen und Spiele, die aufeinander verweisen. Ein Programm von Jan Wilsker-Wiesen, erstellt mit Claude.
 
-Probeversion für den eigenen Gebrauch.
-
-**Web-App:** https://grammaire-en-reseau.wilsker-wiesen.workers.dev (Cloudflare; installierbar, offline nutzbar). Aktualisieren: `python3 tools/build_site.py && npx wrangler@4 deploy`.
+**Web-App:** https://wilsker-wiesen.github.io/grammaire-en-reseau/ (installierbar, offline nutzbar). Jeder Push auf `main` veröffentlicht sie automatisch neu.
 
 **Als Artifact:** https://claude.ai/artifact/RJpL9DiriCm42kpKqjq44T (nur mit eigenem Claude-Konto). Lokal: `python3 tools/build_site.py && python3 -m http.server 8765 --directory _site`.
-
-Das Repository ist privat; GitHub Pages ist deshalb abgeschaltet und der Workflow `pages.yml` deaktiviert. Er lässt sich wieder einschalten, sobald das Programm öffentlich werden soll.
 
 ## Inhalt
 
